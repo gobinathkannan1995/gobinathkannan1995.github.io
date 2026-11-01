@@ -1,0 +1,1895 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gobinath Kannan – Senior Embedded Software Engineer</title>
+<meta name="description" content="Senior Embedded Software Engineer in Munich. Firmware in C/C++ for STM32 and ESP32, FreeRTOS, CAN, bootloaders and OTA, BLE, PCB design in KiCad.">
+<style>
+:root {
+  --bg: #070b10; --bg-2: #0b1219; --panel: #0f1821; --panel-2: #13202b;
+  --line: #1d2d3a; --text: #dfe8ef; --muted: #8197a8;
+  --copper: #e0a458; --green: #3ddc97; --cyan: #4cc9f0; --yellow: #f4d35e;
+  /* system fonts only: no Google Fonts requests (GDPR) */
+  --mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 16px/1.65 "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; }
+body::before { /* faint PCB grid over the whole page */
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background-image:
+    radial-gradient(circle, rgba(76,201,240,.07) 1px, transparent 1.4px);
+  background-size: 24px 24px; }
+a { color: var(--cyan); }
+.wrap { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+.mono { font-family: var(--mono); }
+
+/* ---------- nav ---------- */
+nav { position: sticky; top: 0; z-index: 20; background: rgba(7,11,16,.82);
+  backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+nav .wrap { display: flex; gap: 26px; align-items: center; height: 58px; }
+.logo { font-family: var(--mono); font-weight: 700; color: var(--green); margin-right: auto; text-decoration: none; }
+.logo span { color: var(--muted); }
+nav a.lnk { color: var(--muted); text-decoration: none; font: 500 14px var(--mono); }
+nav a.lnk:hover { color: var(--green); }
+
+/* ---------- hero ---------- */
+.hero { position: relative; overflow: hidden; border-bottom: 1px solid var(--line); }
+#pcb { position: absolute; inset: 0; width: 100%; height: 100%; }
+.hero::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 60% 70% at 30% 50%, rgba(7,11,16,.92) 30%, rgba(7,11,16,.55) 70%, rgba(7,11,16,.2)); }
+.hero .wrap { position: relative; z-index: 2; display: grid; grid-template-columns: 1.15fr 1fr;
+  gap: 48px; align-items: center; padding-top: 72px; padding-bottom: 72px; }
+.me { display: flex; align-items: center; gap: 18px; margin-bottom: 22px; }
+.chip { position: relative; width: 104px; height: 104px; flex: none; }
+.chip img { width: 100%; height: 100%; object-fit: cover; border-radius: 14px;
+  border: 2px solid var(--copper); box-shadow: 0 0 30px rgba(224,164,88,.25); }
+.status { font: 500 13px var(--mono); color: var(--green); display: inline-flex; align-items: center; gap: 8px;
+  border: 1px solid rgba(61,220,151,.35); padding: 4px 12px; border-radius: 20px; background: rgba(61,220,151,.06); }
+.status b { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green);
+  animation: blink 1.6s infinite; }
+@keyframes blink { 50% { opacity: .25; } }
+h1 { font-size: clamp(38px, 5.4vw, 60px); line-height: 1.05; margin: 0 0 10px; font-weight: 800; letter-spacing: -1px; }
+h1 em { font-style: normal; background: linear-gradient(90deg, var(--green), var(--cyan));
+  -webkit-background-clip: text; background-clip: text; color: transparent; }
+.typer { font: 500 17px var(--mono); color: var(--copper); min-height: 28px; margin-bottom: 18px; }
+.typer::after { content: "▌"; color: var(--green); animation: blink 1s steps(1) infinite; }
+.lead { color: #b9c7d2; font-size: 17px; max-width: 560px; margin: 0 0 26px; }
+.btns { display: flex; gap: 12px; flex-wrap: wrap; }
+.btn { font: 600 14px var(--mono); padding: 12px 20px; border-radius: 8px; text-decoration: none;
+  border: 1px solid var(--line); color: var(--text); background: rgba(15,24,33,.8); transition: .2s; }
+.btn:hover { border-color: var(--green); color: var(--green); }
+.btn.primary { background: var(--green); color: #04130c; border-color: var(--green); }
+.btn.primary:hover { background: #5ff0ae; color: #04130c; }
+
+/* oscilloscope */
+.scope { background: #0a0f0c; border: 1px solid #23302a; border-radius: 14px; padding: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.02); }
+.scope-top { display: flex; justify-content: space-between; font: 500 11.5px var(--mono); color: #6f8a7d; margin-bottom: 10px; }
+.scope-top .run { color: var(--green); }
+#osc { display: block; width: 100%; aspect-ratio: 10 / 7; border-radius: 6px; background: #050806; }
+.scope-bot { display: flex; gap: 16px; flex-wrap: wrap; font: 500 12px var(--mono); margin-top: 10px; }
+.ch1 { color: var(--yellow); } .ch2 { color: var(--cyan); } .ch3 { color: #a2b4ad; }
+
+/* stats */
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); border-bottom: 1px solid var(--line); background: var(--bg-2); }
+.stat { padding: 26px 20px; border-right: 1px solid var(--line); text-align: center; }
+.stat:last-child { border-right: 0; }
+.stat b { display: block; font: 700 30px var(--mono); color: var(--green); }
+.stat span { color: var(--muted); font-size: 14px; }
+
+/* ---------- sections ---------- */
+section { padding: 84px 0; }
+.label { font: 500 14px var(--mono); color: var(--copper); margin-bottom: 6px; }
+h2 { font-size: clamp(28px, 3.6vw, 38px); margin: 0 0 36px; letter-spacing: -.5px; }
+
+.project { position: relative; background: linear-gradient(180deg, var(--panel), var(--bg-2));
+  border: 1px solid var(--line); border-radius: 14px; padding: 32px; margin-bottom: 30px; }
+.project::before, .project::after { /* IC-style corner marks */
+  content: ""; position: absolute; width: 14px; height: 14px; border: 2px solid var(--copper); opacity: .7; }
+.project::before { top: -1px; left: -1px; border-right: 0; border-bottom: 0; border-radius: 14px 0 0 0; }
+.project::after { bottom: -1px; right: -1px; border-left: 0; border-top: 0; border-radius: 0 0 14px 0; }
+.ptag { font: 500 12.5px var(--mono); color: var(--green); }
+h3 { font-size: 23px; margin: 4px 0 4px; }
+.meta { font: 13.5px var(--mono); color: var(--muted); margin-bottom: 18px; }
+p { margin: 0 0 16px; }
+ul.points { margin: 0 0 18px; padding: 0; list-style: none; }
+ul.points li { position: relative; padding-left: 22px; margin-bottom: 10px; color: #c3d0da; }
+ul.points li::before { content: "▸"; position: absolute; left: 0; color: var(--green); }
+ul.points b { color: var(--text); }
+.grid2 { display: grid; grid-template-columns: 1.25fr 1fr; gap: 22px; align-items: start; margin: 6px 0 20px; }
+figure { margin: 0; }
+figure img { width: 100%; height: auto; display: block; border-radius: 10px; border: 1px solid var(--line); }
+figure.paper img { background: #fff; padding: 8px; }
+figcaption { font: 12.5px var(--mono); color: var(--muted); margin-top: 8px; }
+.boards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin: 6px 0 20px; }
+.boards figure { background: #fff; border-radius: 10px; padding: 14px; display: flex; flex-direction: column; justify-content: space-between; }
+.boards img { border: 0; max-height: 230px; width: auto; max-width: 100%; margin: 0 auto; }
+.boards figcaption { color: #445; text-align: center; }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.tags span { font: 500 12.5px var(--mono); padding: 4px 11px; border-radius: 6px;
+  color: var(--cyan); background: rgba(76,201,240,.07); border: 1px solid rgba(76,201,240,.22); }
+
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; align-items: start; }
+pre.code { margin: 0; background: #060a0e; border: 1px solid var(--line); border-radius: 10px; padding: 0;
+  font: 13.5px/1.7 var(--mono); overflow-x: auto; }
+pre.code .bar { display: flex; gap: 6px; padding: 10px 14px; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 12px; align-items: center; }
+pre.code .bar i { width: 10px; height: 10px; border-radius: 50%; background: #2a3a48; }
+pre.code code { display: block; padding: 14px 16px; color: #c9d6e0; }
+.k { color: #c792ea; } .f { color: var(--cyan); } .c { color: #5d7385; } .n { color: var(--copper); } .s { color: var(--green); }
+
+/* timeline */
+.timeline { position: relative; padding-left: 34px; }
+.timeline::before { content: ""; position: absolute; left: 9px; top: 6px; bottom: 6px; width: 2px;
+  background: linear-gradient(var(--green), var(--copper) 60%, var(--line)); }
+.job { position: relative; padding: 0 0 34px; }
+.job::before { content: ""; position: absolute; left: -32px; top: 6px; width: 14px; height: 14px; border-radius: 50%;
+  background: var(--bg); border: 3px solid var(--copper); }
+.job:first-child::before { border-color: var(--green); box-shadow: 0 0 12px rgba(61,220,151,.6); }
+.job .when { font: 500 13px var(--mono); color: var(--copper); }
+.job h3 { font-size: 19px; margin: 2px 0 0; }
+.job .org { color: var(--muted); margin-bottom: 6px; }
+.job p { color: #b4c2cd; margin: 0; }
+
+/* skills */
+.skills { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; }
+.skill { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 20px 22px; }
+.skill h4 { margin: 0 0 8px; font: 600 14px var(--mono); color: var(--green); }
+.skill h4::before { content: "#define "; color: #c792ea; font-weight: 400; }
+.skill p { margin: 0; color: #b4c2cd; font-size: 15px; }
+.skill.learning { border-style: dashed; background: transparent; }
+.skill.learning h4 { color: var(--copper); }
+.skill.learning h4::before { content: "#ifdef "; }
+
+.alt { background: var(--bg-2); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+
+footer { padding: 70px 0 80px; text-align: center; }
+footer h2 { margin-bottom: 14px; }
+footer p { color: var(--muted); }
+.term { display: inline-block; text-align: left; font: 14px/1.8 var(--mono); background: #060a0e; border: 1px solid var(--line);
+  border-radius: 10px; padding: 18px 24px; margin: 18px 0 26px; }
+.term .p { color: var(--green); }
+
+/* drawn illustrations */
+.illus { background: #060a0e; border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+.illus svg { display: block; width: 100%; height: auto; }
+.illus svg text { font-family: var(--mono); }
+@keyframes flow { to { stroke-dashoffset: -24; } }
+.flow { stroke-dasharray: 6 6; animation: flow 1s linear infinite; }
+.led { animation: blink 1.2s infinite; }
+@keyframes tg { 0%, 40% { opacity: 1; } 41%, 100% { opacity: .12; } }
+@keyframes ta { 0%, 40% { opacity: .12; } 41%, 50% { opacity: 1; } 51%, 100% { opacity: .12; } }
+@keyframes tr { 0%, 50% { opacity: .12; } 51%, 100% { opacity: 1; } }
+.tlA .g, .tlB .g { animation: tg 8s infinite; }
+.tlA .a, .tlB .a { animation: ta 8s infinite; }
+.tlA .r, .tlB .r { animation: tr 8s infinite; }
+.tlB circle[class] { animation-delay: -4s; }
+@keyframes wave { 0%, 100% { opacity: .15; } 50% { opacity: 1; } }
+.w1 { animation: wave 1.5s infinite; } .w2 { animation: wave 1.5s .2s infinite; } .w3 { animation: wave 1.5s .4s infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { transform-box: fill-box; transform-origin: center; animation: spin 4s linear infinite; }
+@keyframes hover { 50% { transform: translate(-8px, 6px); } }
+.bug { animation: hover 3s ease-in-out infinite; }
+
+/* ChatGPT-made diagnostics animation: drawn at 560x300, scaled to the column */
+.diag-fig { margin: 0; }
+.diag-scale { position: relative; width: 100%; aspect-ratio: 560 / 300; overflow: hidden; border-radius: 22px; }
+.diag-scale .diag-auto { position: absolute; top: 0; left: 0; width: 560px; max-width: none; transform-origin: 0 0; }
+
+/* realistic animated scenes (pure SVG, scale with the column) */
+.scene-fig { margin: 0; }
+.scene { position: relative; border: 1px solid #294157; border-radius: 22px; overflow: hidden;
+  background: linear-gradient(155deg, #101f2b, #09121b 75%); box-shadow: 0 20px 50px #0007; }
+.scene svg { display: block; width: 100%; height: auto; }
+.scene text { font-family: var(--mono); }
+@keyframes trG { 0%, 40% { opacity: 1; } 41%, 100% { opacity: 0; } }
+@keyframes trAm { 0%, 40% { opacity: 0; } 41%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+@keyframes trR { 0%, 50% { opacity: 0; } 51%, 100% { opacity: 1; } }
+.tr-A .tr-g, .tr-B .tr-g { animation: trG 8s infinite; }
+.tr-A .tr-a, .tr-B .tr-a { animation: trAm 8s infinite; }
+.tr-A .tr-r, .tr-B .tr-r { animation: trR 8s infinite; }
+.tr-B circle[class] { animation-delay: -4s; }
+@keyframes trE { 0% { transform: translate(178px,157px); animation-timing-function: ease-in; } 36% { transform: translate(600px,157px); opacity: 1; } 37% { opacity: 0; } 38% { transform: translate(-60px,157px); opacity: 0; } 44% { transform: translate(-60px,157px); opacity: 1; animation-timing-function: ease-out; } 72%, 100% { transform: translate(178px,157px); opacity: 1; } }
+@keyframes trW { 0% { transform: translate(348px,127px); animation-timing-function: ease-in; } 36% { transform: translate(-80px,127px); opacity: 1; } 37% { opacity: 0; } 38% { transform: translate(620px,127px); opacity: 0; } 44% { transform: translate(620px,127px); opacity: 1; animation-timing-function: ease-out; } 72%, 100% { transform: translate(348px,127px); opacity: 1; } }
+@keyframes trS { 0% { transform: translate(257px,50px); animation-timing-function: ease-in; } 36% { transform: translate(257px,340px); opacity: 1; } 37% { opacity: 0; } 38% { transform: translate(257px,-60px); opacity: 0; } 44% { transform: translate(257px,-60px); opacity: 1; animation-timing-function: ease-out; } 72%, 100% { transform: translate(257px,50px); opacity: 1; } }
+@keyframes trN { 0% { transform: translate(287px,216px); animation-timing-function: ease-in; } 36% { transform: translate(287px,-60px); opacity: 1; } 37% { opacity: 0; } 38% { transform: translate(287px,340px); opacity: 0; } 44% { transform: translate(287px,340px); opacity: 1; animation-timing-function: ease-out; } 72%, 100% { transform: translate(287px,216px); opacity: 1; } }
+.tr-east { animation: trE 8s infinite; } .tr-west { animation: trW 8s infinite; }
+.tr-south { animation: trS 8s -4s infinite; } .tr-north { animation: trN 8s -4s infinite; }
+@keyframes bmRing { 0% { transform: scale(.6); opacity: .9; } 100% { transform: scale(1.9); opacity: 0; } }
+.bm-ring { transform-box: fill-box; transform-origin: center; animation: bmRing 2s ease-out infinite; }
+.bm-ring.d2 { animation-delay: .5s; } .bm-ring.d3 { animation-delay: 1s; } .bm-ring.d4 { animation-delay: 1.5s; }
+@keyframes bmWarn { 0%, 58% { fill: #3ddc97; } 60%, 85% { fill: #f4d35e; } 87%, 100% { fill: #3ddc97; } }
+.bm-warn { animation: bmWarn 6s infinite; } .bm-warn.d2 { animation-delay: -3s; }
+@keyframes gbSway { 50% { transform: rotate(3deg); } }
+.gb-sway { transform-box: fill-box; transform-origin: 50% 100%; animation: gbSway 5s ease-in-out infinite; }
+.gb-sway.d2 { animation-delay: -2s; }
+@keyframes gbFlap { to { transform: scaleY(.25); } }
+.gb-wing { transform-box: fill-box; transform-origin: 50% 100%; animation: gbFlap .12s linear infinite alternate; }
+@keyframes gbDrop { 0% { transform: translateY(0); opacity: 0; } 4% { opacity: .9; } 28% { transform: translateY(82px); opacity: 0; } 100% { transform: translateY(82px); opacity: 0; } }
+.gb-drop { animation: gbDrop 6s infinite; } .gb-drop.d2 { animation-delay: .4s; } .gb-drop.d3 { animation-delay: .8s; }
+@keyframes gbKnob { 0%, 40% { transform: translateX(11px); } 42%, 100% { transform: translateX(0); } }
+@keyframes gbTog { 0%, 40% { fill: #3ddc97; } 42%, 100% { fill: #2c3b48; } }
+@keyframes gbPump { 0%, 40% { opacity: 1; } 42%, 100% { opacity: .2; } }
+.gb-knob { animation: gbKnob 6s infinite; } .gb-tog { animation: gbTog 6s infinite; } .gb-pumpled { animation: gbPump 6s infinite; }
+@keyframes gbLamp { 50% { opacity: .75; } }
+.gb-lamp { animation: gbLamp 4s ease-in-out infinite; }
+@keyframes gbN1 { 0%, 100% { transform: rotate(-40deg); } 50% { transform: rotate(15deg); } }
+@keyframes gbN2 { 0%, 100% { transform: rotate(10deg); } 50% { transform: rotate(-35deg); } }
+.gb-n1 { transform-origin: 440px 96px; animation: gbN1 5s ease-in-out infinite; }
+.gb-n2 { transform-origin: 500px 96px; animation: gbN2 7s ease-in-out infinite; }
+@keyframes gbChart { 0% { stroke-dashoffset: 220; } 70%, 100% { stroke-dashoffset: 0; } }
+.gb-chart { stroke-dasharray: 220; animation: gbChart 6s linear infinite; }
+@keyframes dlBar { 0%, 100% { transform: scaleY(.35); } 50% { transform: scaleY(1); } }
+.dl-bar { transform-box: fill-box; transform-origin: 50% 100%; animation: dlBar 3s ease-in-out infinite; }
+.dl-bar.d2 { animation-delay: -.8s; } .dl-bar.d3 { animation-delay: -1.6s; } .dl-bar.d4 { animation-delay: -2.3s; }
+@media (prefers-reduced-motion: reduce) { .smil { display: none; } }
+
+.fpga-lcd { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 0 0 20px; }
+.fpga-lcd figure { margin: 0; }
+.fpga-lcd img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); display: block; }
+.fpga-lcd figcaption { font: 12.5px var(--mono); color: var(--muted); margin-top: 6px; }
+/* lifecycle: requirements -> release */
+.life { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; position: relative; margin-top: 8px; }
+.life::before { content: ""; position: absolute; left: 4%; right: 4%; top: 22px; height: 2px;
+  background: repeating-linear-gradient(90deg, var(--copper) 0 8px, transparent 8px 16px); opacity: .55;
+  animation: lifeFlow 1.2s linear infinite; background-size: 16px 2px; }
+@keyframes lifeFlow { to { background-position: 16px 0; } }
+.step { position: relative; background: var(--bg-2); border: 1px solid var(--line); border-radius: 12px; padding: 16px 14px 14px; }
+.step .pin { width: 44px; height: 44px; margin: -38px auto 10px; border-radius: 10px; display: grid; place-items: center;
+  font: 700 14px var(--mono); color: #04130c; background: var(--green); box-shadow: 0 0 14px rgba(61,220,151,.35); }
+.step h4 { font: 700 13.5px var(--mono); color: var(--cyan); margin: 0 0 8px; text-align: center; letter-spacing: .5px; }
+.step p { font-size: 13.5px; color: #b9c7d2; margin: 0; line-height: 1.5; }
+.trace-back { margin-top: 18px; font: 500 13px var(--mono); color: var(--muted); text-align: center; }
+.trace-back b { color: var(--copper); font-weight: 500; }
+@media (max-width: 860px) { .life { grid-template-columns: repeat(2, 1fr); row-gap: 40px; } .life::before { display: none; } }
+@media (max-width: 480px) { .life { grid-template-columns: 1fr; } }
+@media (max-width: 860px) {
+  .hero .wrap { grid-template-columns: 1fr; padding-top: 44px; padding-bottom: 44px; gap: 34px; }
+  .hero::after { background: rgba(7,11,16,.78); }
+  .stats { grid-template-columns: 1fr 1fr; }
+  .stat:nth-child(2) { border-right: 0; }
+  .stat:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+  .grid2, .split, .boards { grid-template-columns: 1fr; }
+  .project { padding: 22px; }
+  section { padding: 60px 0; }
+  nav a.opt { display: none; }
+}
+@media (max-width: 480px) { nav .wrap { gap: 16px; } .chip { width: 84px; height: 84px; } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a class="logo" href="#top">gk<span>@</span>firmware<span>:~$</span></a>
+    <a class="lnk" href="#projects">projects</a>
+    <a class="lnk opt" href="#experience">experience</a>
+    <a class="lnk opt" href="#skills">skills</a>
+    <a class="lnk" href="#contact">contact</a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <canvas id="pcb" aria-hidden="true"></canvas>
+  <div class="wrap">
+    <div>
+      <div class="me">
+        <div class="chip">
+          <img src="img/photo.jpg" alt="Gobinath Kannan">
+        </div>
+        <div class="status"><b></b>Munich, Germany</div>
+      </div>
+      <h1>Gobinath Kannan<br><em>Embedded Software</em></h1>
+      <div class="typer" id="typer"></div>
+      <p class="lead">About 10 years of embedded firmware in C and C++, from requirements and architecture through design, implementation and testing to series production.
+      Most recently I was the sole firmware owner of an electric vehicle instrument cluster, which I took to production
+      in about 70–80 vehicles, together with the CAN bootloader and the OTA update system for the fleet.</p>
+      <div class="btns">
+        <a class="btn primary" href="Gobinath_Kannan_CV.pdf">↓ download CV</a>
+        <a class="btn" href="mailto:gkannan281995@gmail.com">✉ email</a>
+        <a class="btn" href="https://www.linkedin.com/in/gobinath-kannan">in linkedin</a>
+      </div>
+    </div>
+    <div class="scope" aria-hidden="true">
+      <div class="scope-top"><span>CH1 DAC_OUT &nbsp; CH2 CAN_H &nbsp; CH3 PWM</span><span class="run">● RUN</span></div>
+      <canvas id="osc"></canvas>
+      <div class="scope-bot"><span class="ch1">CH1 1.00V/div</span><span class="ch2">CH2 500kbit/s</span><span class="ch3">CH3 PWM 20kHz</span><span style="color:#6f8a7d">T 50µs/div</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="stats">
+  <div class="stat"><b>~10</b><span>years in embedded</span></div>
+  <div class="stat"><b>70–80</b><span>vehicles in the field with firmware I worked on</span></div>
+  <div class="stat"><b>OTA</b><span>fleet updates over LTE + CAN</span></div>
+  <div class="stat"><b>M.Sc.</b><span>Embedded Systems · TU Chemnitz</span></div>
+</div>
+
+<section id="process">
+  <div class="wrap">
+    <div class="label">// 01 &nbsp;how I work</div>
+    <h2>From requirements to series production</h2>
+    <div class="life">
+      <div class="step"><div class="pin">01</div><h4>REQUIREMENTS</h4><p>Structured requirement documents, in direct contact with customers. Hardware requirements for schematic and PCB.</p></div>
+      <div class="step"><div class="pin">02</div><h4>ARCHITECTURE</h4><p>MCU and component selection, CAN interfaces between ECUs, architecture documents for every product.</p></div>
+      <div class="step"><div class="pin">03</div><h4>DESIGN</h4><p>Modules and state machines, architecture and API documentation for my modules, technical reviews.</p></div>
+      <div class="step"><div class="pin">04</div><h4>IMPLEMENTATION</h4><p>C and C++ on STM32 and ESP32, FreeRTOS, drivers, TouchGFX GUI, MISRA-C, code reviews.</p></div>
+      <div class="step"><div class="pin">05</div><h4>TESTING</h4><p>Unit tests, HIL bench with recorded CAN traffic replayed against the real hardware, test cases traced to requirements.</p></div>
+      <div class="step"><div class="pin">06</div><h4>RELEASE &amp; FIELD</h4><p>Prototype to production, CAN bootloader and OTA updates, root-cause analysis on the bench and in the vehicle.</p></div>
+    </div>
+    <div class="trace-back">V-model: every test case <b>traced back</b> to its requirement · phased releases</div>
+  </div>
+</section>
+
+<section id="projects">
+  <div class="wrap">
+    <div class="label">// 02 &nbsp;projects</div>
+    <h2>What I have built</h2>
+
+    <article class="project">
+      <div class="ptag">[ production ]</div>
+      <h3>EV instrument cluster: from prototype to series production</h3>
+      <div class="meta">E-Works Mobility GmbH, Ismaning · 2022 – 2026</div>
+      <p>E-Works Mobility converted diesel commercial vehicles to electric drive. I was the sole firmware owner of the
+      instrument cluster. I rebuilt the OEM's complete cluster alone by reverse-engineering its hardware and software
+      (the OEM had a full team for it), added new functions, integrated it into our vehicle and took it to production
+      in about 70–80 vehicles.</p>
+      <div class="grid2">
+        <figure>
+          <img src="img/cluster_photo.jpg" alt="Instrument cluster running in the vehicle" loading="lazy">
+          <figcaption>&gt; the cluster in the vehicle: stepper gauges, LEDs, TouchGFX display</figcaption>
+        </figure>
+        <figure class="paper">
+          <img src="img/cluster_block_diagram.png" alt="Cluster firmware block diagram" loading="lazy">
+          <figcaption>&gt; firmware-visible architecture (generalised)</figcaption>
+        </figure>
+      </div>
+      <ul class="points">
+        <li><b>Platform:</b> STM32H7 with FreeRTOS, 480×800 RGB TFT with a TouchGFX GUI in C++ and SDRAM framebuffer, graphics, fonts and audio in external QSPI flash, SAI audio codec, stepper-motor gauges, LED chains, ADAS and safety warnings.</li>
+        <li><b>CAN:</b> communication with every ECU in the vehicle, data from the VCU and BMS, commands exchanged with the VCU. I decoded the OEM's CAN messages and defined the CAN interfaces between the cluster, the junction box and the telematics unit.</li>
+        <li><b>Hardware:</b> selected the MCU, flash, LCD and LED drivers, supplied the hardware requirements for schematic and PCB, reviewed schematics, brought up the boards and debugged at signal level with oscilloscope and logic analyzer.</li>
+        <li><b>Testing:</b> built an automated hardware-in-the-loop bench test with PCAN-Explorer: recorded vehicle CAN traffic replayed against the real hardware, with pass/fail reports, as part of the release validation.</li>
+      </ul>
+      <div class="tags"><span>C</span><span>C++</span><span>STM32H7</span><span>FreeRTOS</span><span>TouchGFX</span><span>CAN</span><span>QSPI</span><span>DMA</span><span>HIL testing</span></div>
+    </article>
+
+    <article class="project">
+      <div class="ptag">[ in the field ]</div>
+      <h3>CAN bootloader and over-the-air updates for the fleet</h3>
+      <div class="meta">E-Works Mobility GmbH · deployed in about 70–80 vehicles</div>
+      <div class="split">
+        <div>
+          <p>The wire harness and CAN were the only access to the ECUs in the vehicle, so updates had to work reliably over CAN.</p>
+          <ul class="points">
+            <li><b>CAN bootloader:</b> composite image across internal and external QSPI flash, adapted open-source ISO-TP library for multi-frame transfer, CRC32 integrity check on every boot, recovery from interrupted updates.</li>
+            <li><b>OTA system:</b> C++ application on the telematics unit (Raspberry Pi, Linux) with WireGuard VPN. It receives new firmware over LTE, verifies it and flashes the ECUs over CAN.</li>
+            <li><b>Low-voltage junction box (STM32F4):</b> worked on it together with colleagues and added overcurrent detection, fault recovery and reporting, safe-state handling, bootloader-side update support and a hardware-version layer (one binary for all PCB revisions).</li>
+          </ul>
+        </div>
+        <pre class="code"><div class="bar"><i></i><i></i><i></i>&nbsp; boot.c &nbsp;<span class="c">(simplified idea)</span></div><code><span class="k">void</span> <span class="f">boot_main</span>(<span class="k">void</span>)
+{
+    <span class="k">const</span> app_hdr_t *hdr = APP_HEADER;
+
+    <span class="c">/* new image waiting? flash it over ISO-TP */</span>
+    <span class="k">if</span> (<span class="f">update_pending</span>()) {
+        <span class="f">receive_image_over_can</span>();
+    }
+
+    <span class="c">/* check the image on every boot */</span>
+    <span class="k">if</span> (<span class="f">crc32</span>(hdr-&gt;start, hdr-&gt;len) != hdr-&gt;crc) {
+        <span class="f">enter_recovery</span>();  <span class="c">/* interrupted update */</span>
+    }
+
+    <span class="f">jump_to_app</span>(hdr-&gt;start);
+}</code></pre>
+      </div>
+      <div class="tags"><span>Bootloader</span><span>ISO-TP</span><span>CRC32</span><span>OTA</span><span>Linux</span><span>WireGuard</span><span>LTE</span><span>Fault handling</span></div>
+    </article>
+
+    <article class="project">
+      <div class="ptag">[ production · diagnostics ]</div>
+      <h3>Vehicle dataloggers and an Android diagnostic app over Bluetooth</h3>
+      <div class="meta">Intellipredikt Technologies, India · 2018 – 2021 · Technical Lead</div>
+      <div class="split">
+        <div>
+          <p>Our hardware box, a communication device, connects to the vehicle bus and logs and forwards the data.
+          A production Android app connects to the box over Bluetooth and talks to the vehicle through it,
+          for example to read and clear diagnostic trouble codes (DTCs).</p>
+          <ul class="points">
+            <li><b>Datalogger firmware:</b> CAN / J1939, ISO 15765 and UDS stacks for production dataloggers, for customers such as Fiat Chrysler, Eaton, Nissan and Dearborn Group.</li>
+            <li><b>Android diagnostic app</b> for Dearborn Group: Bluetooth link to the box, read and clear DTCs, RP1227 API ported from Windows to Android, CAN bus statistics.</li>
+            <li>Asset-monitoring gateways for Wipro (GSM, Bluetooth).</li>
+            <li>Led and mentored a small embedded team, worked along the V-model from requirements to traced test cases, and was in direct contact with the customers.</li>
+          </ul>
+        </div>
+        <figure class="diag-fig">
+<div class="diag-scale" id="diagScale">
+<div class="diag-auto" id="diagAuto">
+  <div class="stage">
+    <div class="conn can"></div>
+
+    <div class="bt-visual" aria-hidden="true">
+      <svg viewBox="0 0 120 80">
+        <path class="wave wl1" d="M22 30 A12 12 0 0 1 22 50" />
+        <path class="wave wl2" d="M15 24 A19 19 0 0 1 15 56" />
+        <path class="wave wl3" d="M8 18 A26 26 0 0 1 8 62" />
+        <path class="wave wr1" d="M98 30 A12 12 0 0 0 98 50" />
+        <path class="wave wr2" d="M105 24 A19 19 0 0 0 105 56" />
+        <path class="wave wr3" d="M112 18 A26 26 0 0 0 112 62" />
+        <path class="btsym" d="M52 30 L68 50 L60 58 V22 L68 30 L52 50" />
+      </svg>
+    </div>
+
+    <div class="vehicle">
+      <div class="vehicle-art">
+        <svg viewBox="0 0 480 252" role="img" aria-label="Commercial van connected over CAN">
+          <defs>
+            <linearGradient id="dgBody" x1="0" y1="0" x2="0" y2="1">
+              <stop stop-color="#f4f7f9"/>
+              <stop offset=".55" stop-color="#d3dde3"/>
+              <stop offset=".85" stop-color="#93a6b3"/>
+              <stop offset="1" stop-color="#6f8391"/>
+            </linearGradient>
+            <linearGradient id="dgGlass" x1="0" y1="0" x2="1" y2="1">
+              <stop stop-color="#b3d1e2"/>
+              <stop offset=".5" stop-color="#38566a"/>
+              <stop offset="1" stop-color="#0c2536"/>
+            </linearGradient>
+            <radialGradient id="dgTire">
+              <stop offset=".6" stop-color="#2a3035"/>
+              <stop offset="1" stop-color="#07090b"/>
+            </radialGradient>
+          </defs>
+          <ellipse cx="248" cy="224" rx="215" ry="12" fill="#000" opacity=".45"/>
+          <path d="M28 200 V78 Q28 60 48 59 L300 56 Q318 56 330 68 L384 124 Q436 132 450 146 Q462 158 462 178 V200 Z" fill="url(#dgBody)" stroke="#6f8697" stroke-width="2.5"/>
+          <path d="M300 70 H322 Q330 70 336 77 L376 122 H300 Z" fill="url(#dgGlass)" stroke="#5f7a8d" stroke-width="2"/>
+          <path d="M294 64 V198 M206 60 V198" stroke="#7f95a4" stroke-width="2" fill="none"/>
+          <path d="M28 150 H462" stroke="#9fb1bd" stroke-width="2" opacity=".8"/>
+          <path d="M60 140 H180" stroke="#6b7d89" stroke-width="3" stroke-linecap="round" opacity=".6"/>
+          <path d="M308 138 H330" stroke="#40525f" stroke-width="5" stroke-linecap="round"/>
+          <path d="M446 150 h14 v14 h-14 Z" fill="#fff3c9"/>
+          <path d="M440 182 h26 v18 h-26 Z" fill="#323c44"/>
+          <path d="M28 182 h12 v18 h-12 Z" fill="#323c44"/>
+          <path d="M30 120 h6 v20 h-6 Z" fill="#ff8a6a"/>
+          <path d="M66 200 a44 44 0 0 1 88 0 Z M346 200 a44 44 0 0 1 88 0 Z" fill="#0d1419"/>
+          <circle cx="110" cy="204" r="34" fill="url(#dgTire)"/>
+          <circle cx="110" cy="204" r="19" fill="#aebdc7" stroke="#4a5862" stroke-width="3"/>
+          <circle cx="110" cy="204" r="7" fill="#4b626e"/>
+          <circle cx="390" cy="204" r="34" fill="url(#dgTire)"/>
+          <circle cx="390" cy="204" r="19" fill="#aebdc7" stroke="#4a5862" stroke-width="3"/>
+          <circle cx="390" cy="204" r="7" fill="#4b626e"/>
+          <path d="M48 66 H290" stroke="#fff" opacity=".35" stroke-width="3"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="device-area">
+      <div class="adapter" aria-label="Communication device">
+        <span class="dg-led"></span>
+        <div class="dg-logo">COMM DEVICE</div>
+        <div class="model">VEHICLE DATA INTERFACE</div>
+        <div class="dg-chip">CAN / J1939<br>ISO 15765</div>
+        <div class="port"></div>
+      </div>
+    </div>
+
+    <div class="phone-area">
+      <div class="phone">
+        <div class="screen">
+          <div class="app-head">◉ VEHICLE SCAN</div>
+          <div class="sub" id="phone-status">CONNECTED · J1939 / BT</div>
+
+          <div id="dtc-list">
+            <div class="dtc">Waiting for vehicle data</div>
+          </div>
+
+          <div class="actionrow">
+            <div class="dg-btn">READ DTC</div>
+            <div class="dg-btn clear" id="clearBtn">CLEAR</div>
+          </div>
+
+          <div class="screen-msg" id="phone-msg">Preparing scan loop...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .diag-auto{
+      --bg:#060c12;
+      --panel:#101c27;
+      --line:#2a4154;
+      --cyan:#28d9ff;
+      --amber:#ffba52;
+      --green:#2ee9a2;
+      --red:#ff6677;
+      --muted:#8ea7bb;
+      color-scheme:dark;
+      width:100%;
+      max-width:560px;
+      margin:0 auto;
+      font-family:ui-sans-serif,system-ui,Segoe UI,Arial,sans-serif;
+    }
+    .diag-auto *{box-sizing:border-box}
+
+    .diag-auto .stage{
+      position:relative;
+      min-height:300px;
+      height:300px;
+      display:grid;
+      grid-template-columns:1fr 118px 56px 146px;
+      gap:6px;
+      align-items:center;
+      border:1px solid #294157;
+      border-radius:22px;
+      padding:18px;
+      background:linear-gradient(155deg,#101f2b,#09121b 75%);
+      overflow:hidden;
+      box-shadow:0 28px 80px #0008;
+    }
+    .diag-auto .stage:before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background-image:
+        linear-gradient(#81ceff06 1px,transparent 1px),
+        linear-gradient(90deg,#81ceff06 1px,transparent 1px);
+      background-size:28px 28px;
+      pointer-events:none;
+    }
+    .diag-auto .stage:after{
+      content:"";
+      position:absolute;
+      top:71%;
+      left:4%;
+      right:4%;
+      height:1px;
+      background:linear-gradient(90deg,transparent,#4a7b9640,transparent);
+    }
+
+    .diag-auto .vehicle,
+    .diag-auto .device-area,
+    .diag-auto .phone-area{
+      z-index:2;
+      position:relative;
+      min-width:0;
+    }
+
+    .diag-auto .vehicle{align-self:center;grid-column:1;grid-row:1;margin-right:26px}
+    .diag-auto .device-area{grid-column:2;grid-row:1}
+    .diag-auto .phone-area{grid-column:4;grid-row:1}
+    .diag-auto .vehicle-art{
+      height:145px;
+      display:flex;
+      align-items:center;
+    }
+    .diag-auto .vehicle-art svg{
+      width:100%;
+      overflow:visible;
+      filter:drop-shadow(0 30px 16px #0009);
+      user-select:none;
+    }
+
+    .diag-auto .device-area{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .diag-auto .adapter{
+      position:relative;
+      width:118px;
+      height:140px;
+      border-radius:20px;
+      background:linear-gradient(125deg,#3b4852 0%,#202a32 20%,#090f14 55%,#26333d 90%,#0c1116 100%);
+      border:3px solid #536777;
+      box-shadow:
+        inset 5px 5px 6px #a7c5df1c,
+        inset -6px -8px 10px #000e,
+        0 18px 30px #000a,
+        0 0 35px #ffba5210;
+      transform:perspective(620px) rotateY(-10deg) rotateX(5deg);
+    }
+    .diag-auto .adapter:before{
+      content:"";
+      position:absolute;
+      inset:13px;
+      border:1px solid #51606b55;
+      border-radius:10px;
+    }
+    .diag-auto .adapter .dg-logo{
+      font-size:12px;
+      letter-spacing:.12em;
+      font-weight:900;
+      color:#ffca65;
+      text-shadow:0 0 13px #ffad3740;
+      text-align:center;
+      margin-top:26px;
+    }
+    .diag-auto .adapter .model{
+      text-align:center;
+      color:#8aa2b3;
+      font-size:8px;
+      margin-top:5px;
+    }
+    .diag-auto .adapter .dg-chip{
+      margin:17px auto 0;
+      width:72px;
+      background:#0b1c24;
+      border:1px solid #3f6072;
+      border-radius:5px;
+      font-family:ui-monospace,monospace;
+      text-align:center;
+      padding:7px 4px;
+      color:#90bccc;
+      font-size:8px;
+      line-height:1.3;
+    }
+    .diag-auto .adapter .dg-led{
+      position:absolute;
+      right:13px;
+      top:12px;
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      background:#55ffad;
+      box-shadow:0 0 18px #24ff9d;
+    }
+    .diag-auto .adapter .port{
+      position:absolute;
+      bottom:-12px;
+      left:33px;
+      width:46px;
+      height:15px;
+      background:linear-gradient(#12181c,#303c46);
+      border:2px solid #536472;
+      border-radius:1px 1px 8px 8px;
+    }
+
+    .diag-auto .phone-area{
+      display:flex;
+      justify-content:center;
+    }
+    .diag-auto .phone{
+      position:relative;
+      width:145px;
+      height:252px;
+      background:linear-gradient(115deg,#53616e,#11171d 24%,#05080b 65%,#35434f);
+      border:3px solid #607687;
+      border-radius:31px;
+      box-shadow:inset 2px 2px 2px #d4ecff33,15px 20px 35px #0009;
+      transform:perspective(800px) rotateY(-8deg);
+    }
+    .diag-auto .phone:before{
+      content:"";
+      position:absolute;
+      top:6px;
+      left:46px;
+      width:50px;
+      height:12px;
+      background:#020609;
+      border-radius:0 0 12px 12px;
+      z-index:3;
+    }
+    .diag-auto .screen{
+      position:absolute;
+      inset:9px;
+      border-radius:23px;
+      background:linear-gradient(150deg,#11212a,#061018);
+      padding:23px 9px 11px;
+      overflow:hidden;
+      border:1px solid #1d2f3a;
+    }
+    .diag-auto .screen .app-head{
+      font-size:9px;
+      color:#57ffc3;
+      font-weight:800;
+      letter-spacing:.06em;
+      margin:0 0 8px;
+    }
+    .diag-auto .screen .sub{
+      font-size:8px;
+      color:#91b4c5;
+      margin:0 0 8px;
+      min-height:10px;
+    }
+
+    .diag-auto .dtc{
+      padding:8px 6px;
+      background:#152834;
+      border:1px solid #264253;
+      border-radius:7px;
+      margin:5px 0;
+      font:8px ui-monospace,monospace;
+      color:#e2f3fd;
+      display:flex;
+      justify-content:space-between;
+      gap:3px;
+      transition:opacity .25s ease, transform .25s ease;
+    }
+    .diag-auto .dtc .dg-status{color:#ffb868}
+    .diag-auto .ok{color:#59efaf !important}
+
+    .diag-auto .screen .actionrow{
+      display:flex;
+      gap:6px;
+      margin-top:10px;
+    }
+    .diag-auto .screen .actionrow .dg-btn{
+      flex:1;
+      min-width:0;
+      padding:7px 0;
+      font-size:8px;
+      border-radius:6px;
+      border:1px solid var(--cyan);
+      background:#0b2c39;
+      color:#91ebff;
+      font-weight:750;
+      text-align:center;
+      transition:all .25s ease;
+    }
+    .diag-auto .screen .actionrow .dg-btn.clear{
+      color:#ffabb2;
+      border-color:#ad394c;
+      background:#2d131a;
+    }
+    .diag-auto .screen .actionrow .dg-btn.clear.active{
+      color:#fff1f2;
+      border-color:#ff8b99;
+      background:#7a1c2c;
+      box-shadow:0 0 18px #ff667755, inset 0 0 10px #ff93a333;
+    }
+    .diag-auto .screen .screen-msg{
+      font-size:8px;
+      color:#72b1cb;
+      margin-top:10px;
+      min-height:18px;
+    }
+
+    /* CAN cable only */
+    .diag-auto .conn.can{
+      position:absolute;
+      left:31.6%;
+      top:56.5%;
+      width:6.4%;
+      height:3px;
+      z-index:1;
+      pointer-events:none;
+      background:linear-gradient(90deg,transparent,#ffb65066,#ffb650);
+      color:#ffbd55;
+    }
+    .diag-auto .conn.can:after{
+      content:"";
+      position:absolute;
+      inset:-3px auto -3px 0;
+      width:22px;
+      border-radius:20px;
+      background:currentColor;
+      filter:blur(3px);
+      box-shadow:0 0 17px currentColor;
+      opacity:0;
+    }
+    .diag-auto.phase-can .conn.can:after{
+      animation:packet 1.1s linear infinite;
+    }
+    @keyframes packet{
+      from{left:0;opacity:0}
+      15%{opacity:1}
+      85%{opacity:1}
+      to{left:calc(100% - 22px);opacity:0}
+    }
+
+    /* wireless Bluetooth */
+    .diag-auto .bt-visual{
+      position:relative;
+      grid-column:3;
+      grid-row:1;
+      justify-self:center;
+      width:112px;
+      height:75px;
+      z-index:3;
+      pointer-events:none;
+      overflow:visible;
+    }
+    .diag-auto .bt-visual svg{
+      width:100%;
+      height:100%;
+      overflow:visible;
+    }
+    .diag-auto .bt-visual .wave{
+      fill:none;
+      stroke:#28d9ff;
+      stroke-width:2.2;
+      stroke-linecap:round;
+      opacity:.18;
+      filter:drop-shadow(0 0 6px #28d9ff88);
+      transform-origin:center;
+    }
+    .diag-auto .bt-visual .btsym{
+      fill:none;
+      stroke:#73e9ff;
+      stroke-width:3.2;
+      stroke-linejoin:round;
+      stroke-linecap:round;
+      opacity:.9;
+      filter:drop-shadow(0 0 7px #28d9ff88);
+    }
+
+    .diag-auto.phase-bt .wl1{animation:wavePulse .8s ease-in-out infinite 0s}
+    .diag-auto.phase-bt .wl2{animation:wavePulse .8s ease-in-out infinite .12s}
+    .diag-auto.phase-bt .wl3{animation:wavePulse .8s ease-in-out infinite .24s}
+    .diag-auto.phase-bt .wr1{animation:wavePulse .8s ease-in-out infinite .36s}
+    .diag-auto.phase-bt .wr2{animation:wavePulse .8s ease-in-out infinite .48s}
+    .diag-auto.phase-bt .wr3{animation:wavePulse .8s ease-in-out infinite .60s}
+    .diag-auto.phase-bt .btsym{animation:symPulse 1s ease-in-out infinite}
+
+    @keyframes wavePulse{
+      0%{opacity:.18;transform:scale(.96)}
+      35%{opacity:1;transform:scale(1)}
+      100%{opacity:.18;transform:scale(1.03)}
+    }
+    @keyframes symPulse{
+      0%,100%{opacity:.45}
+      50%{opacity:1}
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .diag-auto .conn.can:after,
+      .diag-auto .bt-visual .wave,
+      .diag-auto .bt-visual .btsym{
+        animation:none !important;
+      }
+    }
+  </style>
+
+  <script>
+    (() => {
+      const root = document.getElementById('diagAuto');
+      const list = root.querySelector('#dtc-list');
+      const msg = root.querySelector('#phone-msg');
+      const sub = root.querySelector('#phone-status');
+      const clearBtn = root.querySelector('#clearBtn');
+      const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+      let timeouts = [];
+      let cycleInterval = null;
+
+      function clearAllTimers() {
+        timeouts.forEach(t => clearTimeout(t));
+        timeouts = [];
+        if (cycleInterval) {
+          clearInterval(cycleInterval);
+          cycleInterval = null;
+        }
+      }
+
+      function setPhase(name) {
+        root.classList.remove(
+          'phase-can',
+          'phase-bt',
+          'phase-reading',
+          'phase-dtcs',
+          'phase-clear',
+          'phase-idle'
+        );
+        if (name) root.classList.add(name);
+      }
+
+      function showWaiting() {
+        list.innerHTML = '<div class="dtc">Waiting for vehicle data</div>';
+        msg.textContent = 'Preparing scan loop...';
+        sub.textContent = 'CONNECTED · J1939 / BT';
+        clearBtn.classList.remove('active');
+      }
+
+      function showReading() {
+        list.innerHTML = '';
+        msg.textContent = 'Reading...';
+        sub.textContent = 'CONNECTED · J1939 / BT';
+        clearBtn.classList.remove('active');
+      }
+
+      function showDtcs() {
+        list.innerHTML = [
+          '<div class="dtc"><span>P0xxx</span><span class="dg-status">STORED</span></div>',
+          '<div class="dtc"><span>U0xxx</span><span class="dg-status">STORED</span></div>',
+          '<div class="dtc"><span>C0xxx</span><span class="dg-status">STORED</span></div>'
+        ].join('');
+        msg.textContent = 'Stored fault codes retrieved.';
+        sub.textContent = 'CONNECTED · J1939 / BT';
+        clearBtn.classList.remove('active');
+      }
+
+      function showCleared() {
+        list.innerHTML = '<div class="dtc ok">No active DTCs</div>';
+        msg.textContent = 'Fault codes cleared.';
+        sub.textContent = 'CONNECTED · J1939 / BT';
+        clearBtn.classList.add('active');
+      }
+
+      function addTimeout(fn, delay) {
+        const id = setTimeout(fn, delay);
+        timeouts.push(id);
+      }
+
+      function runCycle() {
+        setPhase('phase-can');
+        showWaiting();
+
+        addTimeout(() => {
+          setPhase('phase-bt');
+        }, 2000);
+
+        addTimeout(() => {
+          setPhase('phase-reading');
+          showReading();
+        }, 3300);
+
+        addTimeout(() => {
+          setPhase('phase-dtcs');
+          showDtcs();
+        }, 4700);
+
+        addTimeout(() => {
+          setPhase('phase-clear');
+          showCleared();
+        }, 6200);
+
+        addTimeout(() => {
+          setPhase('phase-idle');
+        }, 7600);
+      }
+
+      function startLoop() {
+        clearAllTimers();
+
+        if (prefersReduced.matches) {
+          setPhase('phase-idle');
+          showCleared();
+          return;
+        }
+
+        runCycle();
+        cycleInterval = setInterval(() => {
+          timeouts = [];
+          runCycle();
+        }, 8000);
+      }
+
+      if (prefersReduced.addEventListener) {
+        prefersReduced.addEventListener('change', startLoop);
+      } else if (prefersReduced.addListener) {
+        prefersReduced.addListener(startLoop);
+      }
+
+      startLoop();
+    })();
+  </script>
+</div>
+</div>
+<figcaption>&gt; illustration: vehicle → comm device (CAN) → Bluetooth → Android app reads and clears DTCs</figcaption>
+</figure>
+
+      </div>
+      <div class="tags"><span>CAN</span><span>J1939</span><span>ISO 15765</span><span>UDS</span><span>DTC read / clear</span><span>Bluetooth</span><span>Android</span><span>RP1227</span><span>Team lead</span></div>
+    </article>
+
+    <article class="project">
+      <div class="ptag">[ wireless ]</div>
+      <h3>BLE 5.0 mesh stack for Autoliv</h3>
+      <div class="meta">Intellipredikt Technologies, India · seat-belt monitoring</div>
+      <div class="split">
+        <div>
+          <p>I delivered a BLE 5.0 mesh stack for Autoliv's seat-belt monitoring system.</p>
+          <ul class="points">
+            <li><b>BLE:</b> GATT services, advertising, pairing and mesh networking.</li>
+          </ul>
+        </div>
+        <figure class="scene-fig">
+  <div class="scene">
+    <svg viewBox="0 0 560 300" role="img" aria-label="Animated BLE mesh: seat-belt nodes in a seating area relay messages hop by hop to a gateway">
+      <defs>
+        <pattern id="bmGrid" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0H0V28" fill="none" stroke="#81ceff" stroke-opacity=".05"/></pattern>
+        <linearGradient id="bmFloor" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#1a2731"/><stop offset="1" stop-color="#0f1820"/></linearGradient>
+        <linearGradient id="bmSeat" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#36536b"/><stop offset="1" stop-color="#1a2b39"/></linearGradient>
+        <linearGradient id="bmGw" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#3b4852"/><stop offset=".5" stop-color="#151d24"/><stop offset="1" stop-color="#26333d"/></linearGradient>
+        <filter id="bmGlow" x="-150%" y="-150%" width="400%" height="400%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <g id="bmSeatShape">
+          <rect x="2" y="3" width="50" height="36" rx="7" fill="#000" opacity=".4"/>
+          <rect width="50" height="36" rx="7" fill="url(#bmSeat)" stroke="#43627b"/>
+          <rect x="0" y="0" width="12" height="36" rx="5" fill="#243a4d"/>
+          <rect x="-3" y="9" width="6" height="18" rx="3" fill="#2f4a5f"/>
+          <path d="M15 5 L38 29" stroke="#6b7f8c" stroke-width="3" stroke-linecap="round"/>
+        </g>
+      </defs>
+      <rect width="560" height="300" fill="url(#bmGrid)"/>
+
+      <!-- seating area seen from above, front on the right -->
+      <rect x="40" y="26" width="430" height="246" rx="30" fill="url(#bmFloor)" stroke="#3a4b5a" stroke-width="2.5"/>
+      <rect x="452" y="52" width="10" height="194" rx="5" fill="#6fa6c4" opacity=".5"/>
+      <rect x="58" y="134" width="300" height="30" rx="6" fill="#0b1219" opacity=".75"/>
+
+      <use href="#bmSeatShape" x="80" y="48"/><use href="#bmSeatShape" x="150" y="48"/><use href="#bmSeatShape" x="220" y="48"/><use href="#bmSeatShape" x="290" y="48"/>
+      <use href="#bmSeatShape" x="80" y="90"/><use href="#bmSeatShape" x="150" y="90"/><use href="#bmSeatShape" x="220" y="90"/><use href="#bmSeatShape" x="290" y="90"/>
+      <use href="#bmSeatShape" x="80" y="172"/><use href="#bmSeatShape" x="150" y="172"/><use href="#bmSeatShape" x="220" y="172"/><use href="#bmSeatShape" x="290" y="172"/>
+      <use href="#bmSeatShape" x="80" y="214"/><use href="#bmSeatShape" x="150" y="214"/><use href="#bmSeatShape" x="220" y="214"/><use href="#bmSeatShape" x="290" y="214"/>
+
+      <!-- mesh links -->
+      <g stroke="#4cc9f0" stroke-opacity=".32" stroke-width="1.3">
+        <path d="M122 66 H332 M122 108 H332 M122 190 H332 M122 232 H332"/>
+        <path d="M122 66 V232 M192 66 V232 M262 66 V232 M332 66 V232"/>
+        <path d="M332 66 L404 150 M332 108 L404 150 M332 190 L404 150 M332 232 L404 150"/>
+      </g>
+      <!-- active hop routes -->
+      <g fill="none" stroke="#3ddc97" stroke-width="2" opacity=".45" class="flow">
+        <path d="M122 66 L192 108 L262 66 L332 108 L404 150"/>
+        <path d="M122 108 L192 66 L262 108 L332 66 L404 150"/>
+        <path d="M122 190 L192 232 L262 190 L332 232 L404 150"/>
+        <path d="M122 232 L192 190 L262 232 L332 190 L404 150"/>
+      </g>
+
+      <!-- seat-belt nodes -->
+      <g fill="none" stroke="#3ddc97" stroke-width="1.5">
+        <circle class="bm-ring" cx="122" cy="66" r="7"/><circle class="bm-ring d2" cx="262" cy="232" r="7"/><circle class="bm-ring d3" cx="192" cy="190" r="7"/><circle class="bm-ring d4" cx="332" cy="108" r="7"/>
+      </g>
+      <g fill="#3ddc97" filter="url(#bmGlow)">
+        <circle cx="122" cy="66" r="5"/><circle cx="192" cy="66" r="5"/><circle cx="262" cy="66" r="5"/><circle cx="332" cy="66" r="5"/>
+        <circle cx="122" cy="108" r="5"/><circle cx="192" cy="108" r="5" class="bm-warn"/><circle cx="262" cy="108" r="5"/><circle cx="332" cy="108" r="5"/>
+        <circle cx="122" cy="190" r="5"/><circle cx="192" cy="190" r="5"/><circle cx="262" cy="190" r="5"/><circle cx="332" cy="190" r="5" class="bm-warn d2"/>
+        <circle cx="122" cy="232" r="5"/><circle cx="192" cy="232" r="5"/><circle cx="262" cy="232" r="5"/><circle cx="332" cy="232" r="5"/>
+      </g>
+
+      <!-- messages hopping through the mesh -->
+      <g class="smil" fill="#b8ffe0" filter="url(#bmGlow)">
+        <circle r="3.6"><animateMotion dur="3.2s" repeatCount="indefinite" path="M122 66 L192 108 L262 66 L332 108 L404 150"/></circle>
+        <circle r="3.6"><animateMotion dur="3.2s" begin="1.6s" repeatCount="indefinite" path="M122 108 L192 66 L262 108 L332 66 L404 150"/></circle>
+        <circle r="3.6"><animateMotion dur="3.2s" begin=".8s" repeatCount="indefinite" path="M122 190 L192 232 L262 190 L332 232 L404 150"/></circle>
+        <circle r="3.6"><animateMotion dur="3.2s" begin="2.4s" repeatCount="indefinite" path="M122 232 L192 190 L262 232 L332 190 L404 150"/></circle>
+      </g>
+
+      <!-- gateway at the front -->
+      <g transform="translate(376 118)">
+        <rect x="3" y="4" width="56" height="64" rx="10" fill="#000" opacity=".45"/>
+        <rect width="56" height="64" rx="10" fill="url(#bmGw)" stroke="#3ddc97" stroke-width="1.5"/>
+        <line x1="44" y1="0" x2="48" y2="-16" stroke="#b5c3cc" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="46" cy="12" r="2.6" fill="#3ddc97" class="led"/>
+        <text x="28" y="38" text-anchor="middle" font-size="8.5" font-weight="700" fill="#3ddc97">GATEWAY</text>
+        <text x="28" y="51" text-anchor="middle" font-size="7.5" fill="#8197a8">BLE 5.0</text>
+      </g>
+
+      <g font-size="10" fill="#8197a8">
+        <circle cx="54" cy="289" r="4" fill="#3ddc97"/><text x="62" y="292">buckled</text>
+        <circle cx="128" cy="289" r="4" fill="#f4d35e"/><text x="136" y="292">unbuckled</text>
+        <line x1="210" y1="289" x2="232" y2="289" stroke="#3ddc97" stroke-width="2" stroke-dasharray="5 4"/><text x="238" y="292">mesh hops → gateway</text>
+      </g>
+    </svg>
+  </div>
+  <figcaption>&gt; illustration: seat-belt nodes report their status through the BLE mesh to the gateway</figcaption>
+</figure>
+      </div>
+      <div class="tags"><span>BLE 5.0</span><span>Mesh</span><span>GATT</span><span>Advertising</span><span>Pairing</span><span>Embedded C</span></div>
+    </article>
+
+    <article class="project">
+      <div class="ptag">[ public infrastructure ]</div>
+      <h3>Wireless traffic signal control for the Tamil Nadu Police</h3>
+      <div class="meta">Analog and Digital Labs, India · 2017 – 2018</div>
+      <div class="split">
+        <div>
+          <p>My main project at Analog and Digital Labs: a wireless system to control traffic signals for the Tamil Nadu Police.</p>
+          <ul class="points">
+            <li><b>System:</b> the central traffic control system connects to an access point; the signal units are Wi-Fi slave devices connected to it.</li>
+            <li><b>Firmware:</b> wireless control over Wi-Fi, SPI-driven output control of the signal lamps.</li>
+            <li><b>Hardware:</b> PCB design for the system.</li>
+            <li>Also built an LED scroll board with audio.</li>
+          </ul>
+        </div>
+        <figure class="scene-fig">
+  <div class="scene">
+    <svg viewBox="0 0 560 300" role="img" aria-label="Animated road junction: the central traffic controller is wired to an access point, and Wi-Fi slave nodes at each signal switch the lamps while cars move on green">
+      <defs>
+        <pattern id="trGrid" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0H0V28" fill="none" stroke="#81ceff" stroke-opacity=".05"/></pattern>
+        <linearGradient id="trAsph" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#222c35"/><stop offset="1" stop-color="#181f26"/></linearGradient>
+        <linearGradient id="trCab" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#3e4a54"/><stop offset=".45" stop-color="#8191a0"/><stop offset="1" stop-color="#2b353d"/></linearGradient>
+        <radialGradient id="trTree" cx=".4" cy=".35"><stop stop-color="#4fa86b"/><stop offset="1" stop-color="#1a4429"/></radialGradient>
+        <linearGradient id="trCarA" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#f6cd8d"/><stop offset="1" stop-color="#a8692a"/></linearGradient>
+        <linearGradient id="trCarB" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#9be8ff"/><stop offset="1" stop-color="#1f7fa3"/></linearGradient>
+        <linearGradient id="trCarC" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#f4f7f9"/><stop offset="1" stop-color="#8fa1ae"/></linearGradient>
+        <linearGradient id="trCarD" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#ff9a9a"/><stop offset="1" stop-color="#a83a3a"/></linearGradient>
+        <filter id="trGlow" x="-150%" y="-150%" width="400%" height="400%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <rect width="560" height="300" fill="url(#trGrid)"/>
+      <g fill="#141c23">
+        <rect x="0" y="0" width="250" height="120"/><rect x="310" y="0" width="250" height="120"/>
+        <rect x="0" y="180" width="250" height="120"/><rect x="310" y="180" width="250" height="120"/>
+      </g>
+      <g>
+        <circle cx="74" cy="56" r="24" fill="#000" opacity=".35"/><circle cx="70" cy="52" r="23" fill="url(#trTree)"/>
+        <circle cx="166" cy="40" r="17" fill="#000" opacity=".35"/><circle cx="163" cy="37" r="16" fill="url(#trTree)"/>
+        <circle cx="474" cy="48" r="20" fill="#000" opacity=".35"/><circle cx="470" cy="45" r="19" fill="url(#trTree)"/>
+        <circle cx="474" cy="252" r="23" fill="#000" opacity=".35"/><circle cx="470" cy="248" r="22" fill="url(#trTree)"/>
+        <circle cx="532" cy="208" r="14" fill="#000" opacity=".35"/><circle cx="529" cy="205" r="13" fill="url(#trTree)"/>
+      </g>
+      <rect x="0" y="120" width="560" height="60" fill="url(#trAsph)"/>
+      <rect x="250" y="0" width="60" height="300" fill="url(#trAsph)"/>
+      <g stroke="#3a4956" stroke-width="3">
+        <line x1="0" y1="120" x2="250" y2="120"/><line x1="310" y1="120" x2="560" y2="120"/>
+        <line x1="0" y1="180" x2="250" y2="180"/><line x1="310" y1="180" x2="560" y2="180"/>
+        <line x1="250" y1="0" x2="250" y2="120"/><line x1="310" y1="0" x2="310" y2="120"/>
+        <line x1="250" y1="180" x2="250" y2="300"/><line x1="310" y1="180" x2="310" y2="300"/>
+      </g>
+      <g stroke="#9aa7b1" stroke-width="2" stroke-dasharray="14 10" opacity=".65">
+        <line x1="0" y1="150" x2="212" y2="150"/><line x1="348" y1="150" x2="560" y2="150"/>
+        <line x1="280" y1="0" x2="280" y2="86"/><line x1="280" y1="214" x2="280" y2="300"/>
+      </g>
+      <g fill="#dfe6eb" opacity=".5">
+        <rect x="222" y="123" width="14" height="6"/><rect x="222" y="132" width="14" height="6"/><rect x="222" y="141" width="14" height="6"/><rect x="222" y="150" width="14" height="6"/><rect x="222" y="159" width="14" height="6"/><rect x="222" y="168" width="14" height="6"/>
+        <rect x="324" y="123" width="14" height="6"/><rect x="324" y="132" width="14" height="6"/><rect x="324" y="141" width="14" height="6"/><rect x="324" y="150" width="14" height="6"/><rect x="324" y="159" width="14" height="6"/><rect x="324" y="168" width="14" height="6"/>
+        <rect x="253" y="92" width="6" height="14"/><rect x="262" y="92" width="6" height="14"/><rect x="271" y="92" width="6" height="14"/><rect x="280" y="92" width="6" height="14"/><rect x="289" y="92" width="6" height="14"/><rect x="298" y="92" width="6" height="14"/>
+        <rect x="253" y="194" width="6" height="14"/><rect x="262" y="194" width="6" height="14"/><rect x="271" y="194" width="6" height="14"/><rect x="280" y="194" width="6" height="14"/><rect x="289" y="194" width="6" height="14"/><rect x="298" y="194" width="6" height="14"/>
+      </g>
+      <g stroke="#dfe6eb" stroke-width="3">
+        <line x1="216" y1="152" x2="216" y2="178"/><line x1="344" y1="122" x2="344" y2="148"/>
+        <line x1="252" y1="88" x2="278" y2="88"/><line x1="282" y1="212" x2="308" y2="212"/>
+      </g>
+
+      <!-- cars: east and west move on signal group A, south and north on group B -->
+      <g class="tr-car tr-east"><g>
+        <rect x="1" y="2" width="34" height="16" rx="5" fill="#000" opacity=".35"/>
+        <rect width="34" height="16" rx="5" fill="url(#trCarA)"/>
+        <rect x="19" y="2.5" width="7" height="11" rx="2" fill="#0c2536"/><rect x="5" y="3" width="5" height="10" rx="2" fill="#0c2536" opacity=".85"/>
+        <rect x="10" y="3" width="9" height="10" rx="1.5" fill="#fff" opacity=".15"/>
+        <circle cx="33" cy="3.5" r="1.6" fill="#fff6c8"/><circle cx="33" cy="12.5" r="1.6" fill="#fff6c8"/>
+        <circle cx="1" cy="3.5" r="1.4" fill="#ff4d4d"/><circle cx="1" cy="12.5" r="1.4" fill="#ff4d4d"/>
+      </g></g>
+      <g class="tr-car tr-west"><g transform="translate(34 16) rotate(180)">
+        <rect x="1" y="2" width="34" height="16" rx="5" fill="#000" opacity=".35"/>
+        <rect width="34" height="16" rx="5" fill="url(#trCarC)"/>
+        <rect x="19" y="2.5" width="7" height="11" rx="2" fill="#0c2536"/><rect x="5" y="3" width="5" height="10" rx="2" fill="#0c2536" opacity=".85"/>
+        <rect x="10" y="3" width="9" height="10" rx="1.5" fill="#fff" opacity=".2"/>
+        <circle cx="33" cy="3.5" r="1.6" fill="#fff6c8"/><circle cx="33" cy="12.5" r="1.6" fill="#fff6c8"/>
+        <circle cx="1" cy="3.5" r="1.4" fill="#ff4d4d"/><circle cx="1" cy="12.5" r="1.4" fill="#ff4d4d"/>
+      </g></g>
+      <g class="tr-car tr-south"><g transform="translate(16 0) rotate(90)">
+        <rect x="1" y="2" width="34" height="16" rx="5" fill="#000" opacity=".35"/>
+        <rect width="34" height="16" rx="5" fill="url(#trCarB)"/>
+        <rect x="19" y="2.5" width="7" height="11" rx="2" fill="#0c2536"/><rect x="5" y="3" width="5" height="10" rx="2" fill="#0c2536" opacity=".85"/>
+        <rect x="10" y="3" width="9" height="10" rx="1.5" fill="#fff" opacity=".18"/>
+        <circle cx="33" cy="3.5" r="1.6" fill="#fff6c8"/><circle cx="33" cy="12.5" r="1.6" fill="#fff6c8"/>
+        <circle cx="1" cy="3.5" r="1.4" fill="#ff4d4d"/><circle cx="1" cy="12.5" r="1.4" fill="#ff4d4d"/>
+      </g></g>
+      <g class="tr-car tr-north"><g transform="translate(0 34) rotate(-90)">
+        <rect x="1" y="2" width="34" height="16" rx="5" fill="#000" opacity=".35"/>
+        <rect width="34" height="16" rx="5" fill="url(#trCarD)"/>
+        <rect x="19" y="2.5" width="7" height="11" rx="2" fill="#0c2536"/><rect x="5" y="3" width="5" height="10" rx="2" fill="#0c2536" opacity=".85"/>
+        <rect x="10" y="3" width="9" height="10" rx="1.5" fill="#fff" opacity=".15"/>
+        <circle cx="33" cy="3.5" r="1.6" fill="#fff6c8"/><circle cx="33" cy="12.5" r="1.6" fill="#fff6c8"/>
+        <circle cx="1" cy="3.5" r="1.4" fill="#ff4d4d"/><circle cx="1" cy="12.5" r="1.4" fill="#ff4d4d"/>
+      </g></g>
+
+      <!-- Wi-Fi links from the access point to the slave node at each signal head -->
+      <g fill="none" stroke="#4cc9f0" stroke-width="1.4" opacity=".55" class="flow">
+        <path d="M180 226 Q196 200 211 183"/><path d="M180 226 Q262 120 365 74"/>
+        <path d="M180 226 Q186 110 243 42"/><path d="M180 226 Q240 268 333 210"/>
+      </g>
+      <g class="smil" fill="#b9f0ff" filter="url(#trGlow)">
+        <circle r="2.8"><animateMotion dur="1.4s" repeatCount="indefinite" path="M180 226 Q196 200 211 183"/></circle>
+        <circle r="2.8"><animateMotion dur="2.2s" begin=".4s" repeatCount="indefinite" path="M180 226 Q262 120 365 74"/></circle>
+        <circle r="2.8"><animateMotion dur="2s" begin=".9s" repeatCount="indefinite" path="M180 226 Q186 110 243 42"/></circle>
+        <circle r="2.8"><animateMotion dur="2s" begin="1.3s" repeatCount="indefinite" path="M180 226 Q240 268 333 210"/></circle>
+      </g>
+
+      <!-- signal heads: A = east/west, B = south/north -->
+      <g transform="translate(196 188)" class="tr-A">
+        <rect x="1" y="2" width="14" height="38" rx="4" fill="#000" opacity=".45"/>
+        <rect width="14" height="38" rx="4" fill="#0b1015" stroke="#3f4e5b"/>
+        <line x1="12" y1="0" x2="15" y2="-6" stroke="#b5c3cc" stroke-width="1.5"/><circle cx="15" cy="-7" r="1.8" fill="#4cc9f0"/>
+        <circle cx="7" cy="7" r="4.6" fill="#ff4d4d" opacity=".15"/><circle cx="7" cy="7" r="4.6" fill="#ff4d4d" class="tr-r" filter="url(#trGlow)"/>
+        <circle cx="7" cy="19" r="4.6" fill="#f4d35e" opacity=".15"/><circle cx="7" cy="19" r="4.6" fill="#f4d35e" class="tr-a" filter="url(#trGlow)"/>
+        <circle cx="7" cy="31" r="4.6" fill="#3ddc97" opacity=".15"/><circle cx="7" cy="31" r="4.6" fill="#3ddc97" class="tr-g" filter="url(#trGlow)"/>
+      </g>
+      <g transform="translate(350 78)" class="tr-A">
+        <rect x="1" y="2" width="14" height="38" rx="4" fill="#000" opacity=".45"/>
+        <rect width="14" height="38" rx="4" fill="#0b1015" stroke="#3f4e5b"/>
+        <line x1="12" y1="0" x2="15" y2="-6" stroke="#b5c3cc" stroke-width="1.5"/><circle cx="15" cy="-7" r="1.8" fill="#4cc9f0"/>
+        <circle cx="7" cy="7" r="4.6" fill="#ff4d4d" opacity=".15"/><circle cx="7" cy="7" r="4.6" fill="#ff4d4d" class="tr-r" filter="url(#trGlow)"/>
+        <circle cx="7" cy="19" r="4.6" fill="#f4d35e" opacity=".15"/><circle cx="7" cy="19" r="4.6" fill="#f4d35e" class="tr-a" filter="url(#trGlow)"/>
+        <circle cx="7" cy="31" r="4.6" fill="#3ddc97" opacity=".15"/><circle cx="7" cy="31" r="4.6" fill="#3ddc97" class="tr-g" filter="url(#trGlow)"/>
+      </g>
+      <g transform="translate(228 46)" class="tr-B">
+        <rect x="1" y="2" width="14" height="38" rx="4" fill="#000" opacity=".45"/>
+        <rect width="14" height="38" rx="4" fill="#0b1015" stroke="#3f4e5b"/>
+        <line x1="12" y1="0" x2="15" y2="-6" stroke="#b5c3cc" stroke-width="1.5"/><circle cx="15" cy="-7" r="1.8" fill="#4cc9f0"/>
+        <circle cx="7" cy="7" r="4.6" fill="#ff4d4d" opacity=".15"/><circle cx="7" cy="7" r="4.6" fill="#ff4d4d" class="tr-r" filter="url(#trGlow)"/>
+        <circle cx="7" cy="19" r="4.6" fill="#f4d35e" opacity=".15"/><circle cx="7" cy="19" r="4.6" fill="#f4d35e" class="tr-a" filter="url(#trGlow)"/>
+        <circle cx="7" cy="31" r="4.6" fill="#3ddc97" opacity=".15"/><circle cx="7" cy="31" r="4.6" fill="#3ddc97" class="tr-g" filter="url(#trGlow)"/>
+      </g>
+      <g transform="translate(318 214)" class="tr-B">
+        <rect x="1" y="2" width="14" height="38" rx="4" fill="#000" opacity=".45"/>
+        <rect width="14" height="38" rx="4" fill="#0b1015" stroke="#3f4e5b"/>
+        <line x1="12" y1="0" x2="15" y2="-6" stroke="#b5c3cc" stroke-width="1.5"/><circle cx="15" cy="-7" r="1.8" fill="#4cc9f0"/>
+        <circle cx="7" cy="7" r="4.6" fill="#ff4d4d" opacity=".15"/><circle cx="7" cy="7" r="4.6" fill="#ff4d4d" class="tr-r" filter="url(#trGlow)"/>
+        <circle cx="7" cy="19" r="4.6" fill="#f4d35e" opacity=".15"/><circle cx="7" cy="19" r="4.6" fill="#f4d35e" class="tr-a" filter="url(#trGlow)"/>
+        <circle cx="7" cy="31" r="4.6" fill="#3ddc97" opacity=".15"/><circle cx="7" cy="31" r="4.6" fill="#3ddc97" class="tr-g" filter="url(#trGlow)"/>
+      </g>
+
+      <!-- central traffic controller cabinet, wired to the access point -->
+      <g transform="translate(30 206)">
+        <rect x="4" y="5" width="62" height="62" rx="4" fill="#000" opacity=".45"/>
+        <rect width="62" height="62" rx="4" fill="url(#trCab)" stroke="#9aa9b4"/>
+        <line x1="31" y1="5" x2="31" y2="57" stroke="#2a343c"/>
+        <g stroke="#2a343c" stroke-width="2"><line x1="7" y1="12" x2="25" y2="12"/><line x1="7" y1="17" x2="25" y2="17"/><line x1="7" y1="22" x2="25" y2="22"/></g>
+        <rect x="36" y="36" width="20" height="13" rx="2" fill="#0d1820" stroke="#3ddc97" stroke-width=".8"/>
+        <circle cx="51" cy="12" r="2.6" fill="#3ddc97" class="led"/>
+      </g>
+      <path d="M92 246 C120 246 130 240 156 240" fill="none" stroke="#e0a458" stroke-width="3"/>
+      <path d="M92 246 C120 246 130 240 156 240" fill="none" stroke="#fff3d6" stroke-width="1.2" stroke-dasharray="4 10" class="flow"/>
+      <!-- access point -->
+      <g transform="translate(156 228)">
+        <g stroke="#b5c3cc" stroke-width="2.2" stroke-linecap="round"><line x1="10" y1="2" x2="6" y2="-12"/><line x1="38" y1="2" x2="42" y2="-12"/></g>
+        <rect x="2" y="3" width="48" height="24" rx="6" fill="#000" opacity=".45"/>
+        <rect width="48" height="24" rx="6" fill="#1b252e" stroke="#4cc9f0" stroke-width="1.3"/>
+        <g fill="#4cc9f0"><circle cx="13" cy="16" r="2" class="led"/><circle cx="21" cy="16" r="2"/><circle cx="29" cy="16" r="2" class="led"/></g>
+      </g>
+      <text x="14" y="290" font-size="9.5" font-weight="700" fill="#3ddc97">CENTRAL CONTROLLER</text>
+      <text x="150" y="272" font-size="9.5" font-weight="700" fill="#4cc9f0">ACCESS POINT</text>
+      <text x="360" y="292" font-size="9.5" fill="#8197a8">Wi-Fi slave node on each signal</text>
+      <text x="14" y="20" font-size="10" fill="#8197a8">junction · central controller → access point → Wi-Fi signal nodes</text>
+    </svg>
+  </div>
+  <figcaption>&gt; illustration: the central traffic control system talks through an access point to the Wi-Fi slave nodes at each signal</figcaption>
+</figure>
+      </div>
+      <div class="tags"><span>Wi-Fi</span><span>SPI</span><span>Embedded C</span><span>PCB design</span><span>Lamp control</span></div>
+    </article>
+
+    <article class="project">
+      <div class="ptag">[ IoT · research ]</div>
+      <h3>Growthboxes: remote-controlled growing boxes on ThingsBoard</h3>
+      <div class="meta">TU Chemnitz · Research Assistant · 2022</div>
+      <div class="split">
+        <div>
+          <p>Plants, insects and more are grown inside the boxes. The firmware measures the conditions in each box
+          and controls it, and the status and controls of the boxes are on ThingsBoard.</p>
+          <ul class="points">
+            <li><b>Box controller:</b> firmware on a 32-bit MCU reading temperature and humidity sensors and controlling pumps and actuators.</li>
+            <li><b>IoT:</b> ESP32 devices sending data over MQTT to ThingsBoard, with dashboards for status and remote control of the devices.</li>
+          </ul>
+        </div>
+        <figure class="scene-fig">
+  <div class="scene">
+    <svg viewBox="0 0 560 300" role="img" aria-label="Animated growing box with plants, insects, grow light, sensor and pump, connected to a controller board and a ThingsBoard dashboard over MQTT">
+      <defs>
+        <pattern id="gbGrid" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0H0V28" fill="none" stroke="#81ceff" stroke-opacity=".05"/></pattern>
+        <linearGradient id="gbGlass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#4cc9f0" stop-opacity=".16"/><stop offset=".5" stop-color="#4cc9f0" stop-opacity=".04"/><stop offset="1" stop-color="#4cc9f0" stop-opacity=".1"/></linearGradient>
+        <linearGradient id="gbSoil" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#6b4a2c"/><stop offset="1" stop-color="#2b1c10"/></linearGradient>
+        <linearGradient id="gbLeaf" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#1f8a52"/><stop offset=".6" stop-color="#5fe39a"/><stop offset="1" stop-color="#3cbf78"/></linearGradient>
+        <linearGradient id="gbCone" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff3c4" stop-opacity=".32"/><stop offset="1" stop-color="#fff3c4" stop-opacity="0"/></linearGradient>
+        <linearGradient id="gbPcb" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#178a5a"/><stop offset="1" stop-color="#0b4630"/></linearGradient>
+        <linearGradient id="gbMetal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#dfe6eb"/><stop offset=".5" stop-color="#9fb0bc"/><stop offset="1" stop-color="#cfd8df"/></linearGradient>
+        <filter id="gbGlow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <path id="gbLeafP" d="M0 0 C8 -9 24 -9 32 0 C24 9 8 9 0 0Z"/>
+      </defs>
+      <rect width="560" height="300" fill="url(#gbGrid)"/>
+
+      <!-- glass growing box (3D) -->
+      <polygon points="214,46 246,24 246,220 214,242" fill="url(#gbGlass)" stroke="#8fb3c7" stroke-width="2"/>
+      <polygon points="34,46 66,24 246,24 214,46" fill="#4cc9f0" fill-opacity=".08" stroke="#8fb3c7" stroke-width="2"/>
+      <rect x="50" y="52" width="150" height="8" rx="4" fill="#fff6d5" filter="url(#gbGlow)" class="gb-lamp"/>
+      <polygon points="54,60 196,60 210,200 40,200" fill="url(#gbCone)" class="gb-lamp"/>
+      <rect x="40" y="200" width="168" height="36" rx="3" fill="url(#gbSoil)"/>
+      <rect x="40" y="200" width="168" height="5" fill="#7a5634"/>
+
+      <!-- plants -->
+      <g class="gb-sway">
+        <path d="M100 202 C97 180 104 156 99 116" stroke="#3cbf78" stroke-width="3" fill="none"/>
+        <use href="#gbLeafP" fill="url(#gbLeaf)" transform="translate(99 184) rotate(-160)"/>
+        <use href="#gbLeafP" fill="url(#gbLeaf)" transform="translate(101 170) rotate(-22)"/>
+        <use href="#gbLeafP" fill="url(#gbLeaf)" transform="translate(100 150) rotate(-152) scale(.85)"/>
+        <use href="#gbLeafP" fill="url(#gbLeaf)" transform="translate(101 138) rotate(-30) scale(.8)"/>
+        <use href="#gbLeafP" fill="url(#gbLeaf)" transform="translate(99 120) rotate(-95) scale(.55)"/>
+      </g>
+      <g class="gb-sway d2">
+        <path d="M162 202 C160 186 166 170 163 150" stroke="#3cbf78" stroke-width="2.6" fill="none"/>
+        <use href="#gbLeafP" fill="url(#gbLeaf)" transform="translate(162 188) rotate(-158) scale(.75)"/>
+        <use href="#gbLeafP" fill="url(#gbLeaf)" transform="translate(164 174) rotate(-25) scale(.7)"/>
+        <use href="#gbLeafP" fill="url(#gbLeaf)" transform="translate(163 154) rotate(-92) scale(.5)"/>
+      </g>
+
+      <!-- insects -->
+      <g class="smil">
+        <g>
+          <ellipse rx="4.2" ry="2.5" fill="#e0a458"/>
+          <ellipse class="gb-wing" cx="-1.5" cy="-3" rx="3.6" ry="2" fill="#dfe8ef" opacity=".6"/>
+          <ellipse class="gb-wing" cx="1.8" cy="-3" rx="3.6" ry="2" fill="#dfe8ef" opacity=".6"/>
+          <animateMotion dur="7s" repeatCount="indefinite" path="M70 100 C110 72 170 118 186 86 C200 60 120 56 70 100Z"/>
+        </g>
+        <g>
+          <ellipse rx="3.4" ry="2" fill="#c98a3e"/>
+          <ellipse class="gb-wing" cx="-1.2" cy="-2.5" rx="3" ry="1.7" fill="#dfe8ef" opacity=".6"/>
+          <ellipse class="gb-wing" cx="1.5" cy="-2.5" rx="3" ry="1.7" fill="#dfe8ef" opacity=".6"/>
+          <animateMotion dur="9s" begin="1s" repeatCount="indefinite" path="M180 150 C150 120 130 170 90 140 C60 120 120 90 180 150Z"/>
+        </g>
+      </g>
+
+      <!-- sensor on the back wall -->
+      <rect x="46" y="72" width="34" height="20" rx="3" fill="#0f1821" stroke="#e0a458"/>
+      <text x="51" y="85" font-size="7.5" font-weight="700" fill="#e0a458">T/RH</text>
+      <circle cx="75" cy="77" r="1.8" fill="#3ddc97" class="led"/>
+
+      <!-- pump, tube, nozzle and water drops -->
+      <path d="M30 252 H44 V100 H118" stroke="#4cc9f0" stroke-width="2.5" fill="none" opacity=".75"/>
+      <rect x="112" y="98" width="12" height="7" rx="2" fill="url(#gbMetal)"/>
+      <g fill="#7fd8ff">
+        <circle cx="118" cy="110" r="2.2" opacity="0" class="gb-drop"/>
+        <circle cx="116" cy="110" r="1.8" opacity="0" class="gb-drop d2"/>
+        <circle cx="120" cy="110" r="2" opacity="0" class="gb-drop d3"/>
+      </g>
+      <rect x="4" y="242" width="28" height="20" rx="4" fill="url(#gbMetal)" stroke="#6c7d8a"/>
+      <circle cx="12" cy="252" r="2.2" fill="#3ddc97" class="gb-pumpled"/>
+      <text x="4" y="276" font-size="9" fill="#8197a8">pump</text>
+
+      <!-- glass front face and frame on top -->
+      <rect x="34" y="46" width="180" height="196" fill="url(#gbGlass)" stroke="#a9c6d6" stroke-width="2.5"/>
+      <path d="M48 56 L92 56 L58 120 Z" fill="#fff" opacity=".05"/>
+      <text x="34" y="262" font-size="9.5" font-weight="700" fill="#4cc9f0">GROWTH BOX</text>
+
+      <!-- cables to the controller -->
+      <path d="M80 82 C190 82 222 132 262 132" stroke="#e0a458" stroke-width="1.6" fill="none" opacity=".8"/>
+      <path d="M32 256 C140 292 220 200 262 172" stroke="#e0a458" stroke-width="1.6" fill="none" opacity=".6"/>
+
+      <!-- controller board -->
+      <g transform="translate(262 120)">
+        <rect x="3" y="4" width="100" height="72" rx="6" fill="#000" opacity=".45"/>
+        <rect width="100" height="72" rx="6" fill="url(#gbPcb)" stroke="#2fb87c"/>
+        <g fill="#0b2b1d"><circle cx="7" cy="7" r="3"/><circle cx="93" cy="7" r="3"/><circle cx="7" cy="65" r="3"/><circle cx="93" cy="65" r="3"/></g>
+        <g stroke="#e0a458" stroke-width="1" opacity=".55" fill="none"><path d="M14 40 H40 V20"/><path d="M14 48 H50 V46"/><path d="M30 60 H88"/></g>
+        <rect x="12" y="14" width="22" height="16" rx="2" fill="#141a1f"/>
+        <rect x="46" y="10" width="46" height="36" rx="2" fill="url(#gbMetal)" stroke="#7f909c"/>
+        <path d="M50 14 h7 v4 h7 v-4 h7 v4 h7 v-4 h7" stroke="#b38b3a" stroke-width="1.2" fill="none"/>
+        <text x="69" y="36" text-anchor="middle" font-size="8" font-weight="700" fill="#24323c">ESP32</text>
+        <g fill="#d6b25e"><rect x="12" y="64" width="4" height="4"/><rect x="20" y="64" width="4" height="4"/><rect x="28" y="64" width="4" height="4"/><rect x="36" y="64" width="4" height="4"/><rect x="44" y="64" width="4" height="4"/></g>
+        <circle cx="20" cy="52" r="2.6" fill="#3ddc97" class="led"/>
+      </g>
+      <text x="262" y="210" font-size="9.5" font-weight="700" fill="#3ddc97">CONTROLLER</text>
+      <text x="262" y="223" font-size="8.5" fill="#8197a8">MCU / ESP32</text>
+
+      <!-- MQTT link -->
+      <path d="M362 150 C384 150 382 118 404 118" stroke="#4cc9f0" stroke-width="2" fill="none" class="flow"/>
+      <text x="364" y="172" font-size="9" font-weight="700" fill="#4cc9f0">MQTT</text>
+      <g class="smil" fill="#b9f0ff" filter="url(#gbGlow)">
+        <circle r="2.6"><animateMotion dur="1.3s" repeatCount="indefinite" path="M362 150 C384 150 382 118 404 118"/></circle>
+        <circle r="2.6"><animateMotion dur="1.3s" begin=".65s" repeatCount="indefinite" path="M362 150 C384 150 382 118 404 118"/></circle>
+      </g>
+
+      <!-- ThingsBoard dashboard on a monitor -->
+      <g>
+        <rect x="401" y="40" width="154" height="122" rx="8" fill="#000" opacity=".45"/>
+        <rect x="398" y="36" width="154" height="122" rx="8" fill="#0b1219" stroke="#4a5d6c" stroke-width="1.5"/>
+        <rect x="406" y="44" width="138" height="104" rx="4" fill="#071018"/>
+        <rect x="466" y="158" width="20" height="20" fill="#2a3640"/><rect x="442" y="178" width="68" height="6" rx="3" fill="#2a3640"/>
+        <text x="413" y="58" font-size="8" font-weight="700" fill="#3ddc97">THINGSBOARD</text>
+        <text x="492" y="58" font-size="7" fill="#8197a8">pump</text>
+        <rect x="514" y="50" width="22" height="11" rx="5.5" class="gb-tog" fill="#2c3b48"/>
+        <circle cx="519.5" cy="55.5" r="4" fill="#e6edf2" class="gb-knob"/>
+        <path d="M422 96 A18 18 0 0 1 458 96" stroke="#2c3b48" stroke-width="5" fill="none"/>
+        <line x1="440" y1="96" x2="440" y2="80" stroke="#e0a458" stroke-width="2.2" stroke-linecap="round" class="gb-n1"/>
+        <circle cx="440" cy="96" r="2.4" fill="#e0a458"/>
+        <text x="430" y="108" font-size="7" fill="#8197a8">temp</text>
+        <path d="M482 96 A18 18 0 0 1 518 96" stroke="#2c3b48" stroke-width="5" fill="none"/>
+        <line x1="500" y1="96" x2="500" y2="80" stroke="#4cc9f0" stroke-width="2.2" stroke-linecap="round" class="gb-n2"/>
+        <circle cx="500" cy="96" r="2.4" fill="#4cc9f0"/>
+        <text x="484" y="108" font-size="7" fill="#8197a8">humidity</text>
+        <polyline points="412,140 428,132 444,136 460,126 476,130 492,120 508,124 524,116 538,119" fill="none" stroke="#3ddc97" stroke-width="1.6" class="gb-chart"/>
+      </g>
+    </svg>
+  </div>
+  <figcaption>&gt; illustration: growth box with sensor and pump → controller → MQTT → ThingsBoard</figcaption>
+</figure>
+      </div>
+      <div class="tags"><span>32-bit MCU</span><span>ESP32</span><span>Sensors</span><span>Pumps / actuators</span><span>MQTT</span><span>ThingsBoard</span><span>IoT</span></div>
+    </article>
+
+    <article class="project">
+      <div class="ptag">[ industrial · first project ]</div>
+      <h3>Industrial dataloggers: many machines, one central receiver</h3>
+      <div class="meta">Lakshmi Info Tech, India · 2016 – 2017</div>
+      <div class="split">
+        <div>
+          <p>My first project: dataloggers on several machines collect the machine data and send it over Wi-Fi
+          to a central router, which receives the data from all machines in one place.</p>
+          <ul class="points">
+            <li><b>Datalogger firmware:</b> data collection on each machine and Wi-Fi transfer to the central router.</li>
+            <li><b>Energy monitoring for Texmo:</b> Modbus energy meters read on a Raspberry Pi.</li>
+          </ul>
+        </div>
+        <figure class="scene-fig">
+  <div class="scene">
+    <svg viewBox="0 0 560 300" role="img" aria-label="Animated factory floor: dataloggers on three machines send data over Wi-Fi to a central router and a data screen">
+      <defs>
+        <pattern id="dlGrid" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0H0V28" fill="none" stroke="#81ceff" stroke-opacity=".05"/></pattern>
+        <linearGradient id="dlMach" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#4c5a66"/><stop offset=".35" stop-color="#7b8b97"/><stop offset="1" stop-color="#36424c"/></linearGradient>
+        <linearGradient id="dlGlass" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#5f8aa3"/><stop offset=".45" stop-color="#1c3a4e"/><stop offset="1" stop-color="#0a1c28"/></linearGradient>
+        <linearGradient id="dlFloor" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#18222b"/><stop offset="1" stop-color="#0b1117"/></linearGradient>
+        <linearGradient id="dlBox" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#3b4852"/><stop offset=".5" stop-color="#151d24"/><stop offset="1" stop-color="#26333d"/></linearGradient>
+        <filter id="dlGlow" x="-150%" y="-150%" width="400%" height="400%"><feGaussianBlur stdDeviation="2.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        <g id="dlMachine">
+          <ellipse cx="46" cy="131" rx="52" ry="6" fill="#000" opacity=".45"/>
+          <rect x="4" y="12" width="84" height="10" rx="3" fill="#2a343c"/>
+          <rect x="0" y="20" width="92" height="110" rx="6" fill="url(#dlMach)" stroke="#8a9aa6"/>
+          <rect x="10" y="32" width="50" height="46" rx="4" fill="url(#dlGlass)" stroke="#6b879a"/>
+          <rect x="66" y="32" width="20" height="46" rx="3" fill="#13202b"/>
+          <rect x="69" y="36" width="14" height="10" rx="1.5" fill="#4cc9f0" opacity=".55"/>
+          <circle cx="72" cy="56" r="3" fill="#ff6b6b"/><circle cx="80" cy="56" r="3" fill="#3ddc97"/>
+          <rect x="70" y="64" width="12" height="8" rx="1.5" fill="#2a3640"/>
+          <line x1="0" y1="84" x2="92" y2="84" stroke="#2a343c" stroke-width="2"/>
+          <line x1="83" y1="-2" x2="83" y2="12" stroke="#9fb1bd" stroke-width="2"/>
+          <rect x="78" y="-26" width="10" height="8" rx="1.5" fill="#ff4d4d" opacity=".25"/>
+          <rect x="78" y="-18" width="10" height="8" rx="1.5" fill="#f4d35e" opacity=".25"/>
+          <rect x="78" y="-10" width="10" height="8" rx="1.5" fill="#3ddc97" opacity=".25"/>
+          <rect x="10" y="92" width="46" height="24" rx="3" fill="#2b2216" stroke="#e0a458"/>
+          <text x="16" y="108" font-size="7.5" font-weight="700" fill="#e0a458">LOGGER</text>
+          <line x1="50" y1="92" x2="50" y2="82" stroke="#b5c3cc" stroke-width="1.6"/>
+          <circle cx="50" cy="80" r="2" fill="#4cc9f0"/>
+        </g>
+      </defs>
+      <rect width="560" height="300" fill="url(#dlGrid)"/>
+      <rect x="0" y="240" width="560" height="60" fill="url(#dlFloor)"/>
+      <line x1="0" y1="240" x2="560" y2="240" stroke="#2c3b48" stroke-width="2"/>
+      <g stroke="#e0a458" stroke-opacity=".25" stroke-width="6" stroke-dasharray="12 12"><line x1="10" y1="290" x2="330" y2="290"/></g>
+
+      <!-- three machines with dataloggers -->
+      <g transform="translate(18 110)">
+        <use href="#dlMachine"/>
+        <g transform="translate(35 55)"><g class="spin"><circle r="13" fill="none" stroke="#b5c3cc" stroke-width="4" stroke-dasharray="5 4"/><circle r="4" fill="#b5c3cc"/></g></g>
+        <rect x="78" y="-10" width="10" height="8" rx="1.5" fill="#3ddc97" filter="url(#dlGlow)"/>
+        <circle cx="50" cy="96" r="1.8" fill="#3ddc97" class="led"/>
+        <g fill="none" stroke="#4cc9f0" stroke-width="1.6" stroke-linecap="round"><path class="w1" d="M45 74 A7 7 0 0 1 55 74"/><path class="w2" d="M41 71 A12 12 0 0 1 59 71"/><path class="w3" d="M37 68 A17 17 0 0 1 63 68"/></g>
+        <text x="20" y="148" font-size="9" fill="#8197a8">MACHINE 1</text>
+      </g>
+      <g transform="translate(120 110)">
+        <use href="#dlMachine"/>
+        <g transform="translate(35 55)"><g class="spin"><circle r="13" fill="none" stroke="#b5c3cc" stroke-width="4" stroke-dasharray="5 4"/><circle r="4" fill="#b5c3cc"/></g></g>
+        <rect x="78" y="-18" width="10" height="8" rx="1.5" fill="#f4d35e" filter="url(#dlGlow)" class="led"/>
+        <circle cx="50" cy="96" r="1.8" fill="#3ddc97" class="led"/>
+        <g fill="none" stroke="#4cc9f0" stroke-width="1.6" stroke-linecap="round"><path class="w2" d="M45 74 A7 7 0 0 1 55 74"/><path class="w3" d="M41 71 A12 12 0 0 1 59 71"/><path class="w1" d="M37 68 A17 17 0 0 1 63 68"/></g>
+        <text x="20" y="148" font-size="9" fill="#8197a8">MACHINE 2</text>
+      </g>
+      <g transform="translate(222 110)">
+        <use href="#dlMachine"/>
+        <g transform="translate(35 55)"><g class="spin"><circle r="13" fill="none" stroke="#b5c3cc" stroke-width="4" stroke-dasharray="5 4"/><circle r="4" fill="#b5c3cc"/></g></g>
+        <rect x="78" y="-10" width="10" height="8" rx="1.5" fill="#3ddc97" filter="url(#dlGlow)"/>
+        <circle cx="50" cy="96" r="1.8" fill="#3ddc97" class="led"/>
+        <g fill="none" stroke="#4cc9f0" stroke-width="1.6" stroke-linecap="round"><path class="w3" d="M45 74 A7 7 0 0 1 55 74"/><path class="w1" d="M41 71 A12 12 0 0 1 59 71"/><path class="w2" d="M37 68 A17 17 0 0 1 63 68"/></g>
+        <text x="20" y="148" font-size="9" fill="#8197a8">MACHINE 3</text>
+      </g>
+
+      <!-- Wi-Fi links to the central router -->
+      <g fill="none" stroke="#4cc9f0" stroke-width="1.6" opacity=".5" class="flow">
+        <path d="M68 172 C110 60 300 50 380 78"/><path d="M170 172 C200 100 320 70 392 86"/><path d="M272 172 C300 130 350 104 400 98"/>
+      </g>
+      <g class="smil" fill="#b9f0ff" filter="url(#dlGlow)">
+        <circle r="3"><animateMotion dur="2.4s" repeatCount="indefinite" path="M68 172 C110 60 300 50 380 78"/></circle>
+        <circle r="3"><animateMotion dur="2s" begin=".7s" repeatCount="indefinite" path="M170 172 C200 100 320 70 392 86"/></circle>
+        <circle r="3"><animateMotion dur="1.7s" begin="1.2s" repeatCount="indefinite" path="M272 172 C300 130 350 104 400 98"/></circle>
+      </g>
+      <text x="196" y="74" font-size="10" fill="#4cc9f0">Wi-Fi</text>
+
+      <!-- central router -->
+      <g transform="translate(372 64)">
+        <g stroke="#b5c3cc" stroke-width="3" stroke-linecap="round"><line x1="12" y1="2" x2="6" y2="-24"/><line x1="40" y1="2" x2="40" y2="-28"/><line x1="68" y1="2" x2="74" y2="-24"/></g>
+        <rect x="3" y="4" width="80" height="36" rx="8" fill="#000" opacity=".45"/>
+        <rect width="80" height="36" rx="8" fill="url(#dlBox)" stroke="#3ddc97" stroke-width="1.5"/>
+        <g fill="#3ddc97"><circle cx="14" cy="24" r="2.2" class="led"/><circle cx="24" cy="24" r="2.2"/><circle cx="34" cy="24" r="2.2" class="led"/><circle cx="44" cy="24" r="2.2"/></g>
+        <text x="0" y="54" font-size="9.5" font-weight="700" fill="#3ddc97">CENTRAL ROUTER</text>
+      </g>
+
+      <!-- data screen -->
+      <path d="M430 100 C440 130 470 128 478 142" stroke="#3ddc97" stroke-width="2" fill="none" class="flow"/>
+      <g transform="translate(410 142)">
+        <rect x="3" y="4" width="132" height="86" rx="6" fill="#000" opacity=".45"/>
+        <rect width="132" height="86" rx="6" fill="#0b1219" stroke="#4a5d6c" stroke-width="1.5"/>
+        <rect x="6" y="6" width="120" height="66" rx="3" fill="#071018"/>
+        <text x="12" y="19" font-size="7.5" font-weight="700" fill="#dfe8ef">MACHINE DATA</text>
+        <line x1="12" y1="66" x2="120" y2="66" stroke="#2c3b48"/>
+        <g fill="#4cc9f0">
+          <rect x="16" y="28" width="16" height="38" class="dl-bar"/>
+          <rect x="40" y="28" width="16" height="38" class="dl-bar d2" fill="#3ddc97"/>
+          <rect x="64" y="28" width="16" height="38" class="dl-bar d3" fill="#e0a458"/>
+          <rect x="88" y="28" width="16" height="38" class="dl-bar d4"/>
+        </g>
+        <rect x="58" y="86" width="16" height="12" fill="#2a3640"/><rect x="40" y="98" width="52" height="5" rx="2.5" fill="#2a3640"/>
+      </g>
+      <text x="14" y="20" font-size="10" fill="#8197a8">factory floor · Wi-Fi dataloggers</text>
+    </svg>
+  </div>
+  <figcaption>&gt; illustration: dataloggers on each machine → Wi-Fi → central router → machine data</figcaption>
+</figure>
+      </div>
+      <div class="tags"><span>Dataloggers</span><span>Wi-Fi</span><span>Modbus</span><span>Raspberry Pi</span><span>Energy monitoring</span></div>
+    </article>
+
+    <article class="project">
+      <div class="ptag">[ hardware ]</div>
+      <h3>PCB design: my own boards in KiCad</h3>
+      <div class="meta">schematic · layout · Gerber · BOM · ordering</div>
+      <p>I design my own boards in KiCad, including 4-layer prototypes, and order them myself.
+      The impedance measurement board (AD5933 with STM32) came out of the preparation phase of my master's thesis.
+      The 32-channel force sensor system was my M.Sc. research project (grade 1.3): I designed the PCB, wrote the
+      ESP32 firmware and tested the system.</p>
+      <div class="boards">
+        <figure>
+          <img src="img/ad5933_board.png" alt="AD5933 and STM32 impedance measurement board" loading="lazy">
+          <figcaption>AD5933 + STM32 impedance board</figcaption>
+        </figure>
+        <figure>
+          <img src="img/fsr_board_front.png" alt="32-channel force sensor board, front" loading="lazy">
+          <figcaption>32-ch force sensor board · front</figcaption>
+        </figure>
+        <figure>
+          <img src="img/fsr_board_back.png" alt="32-channel force sensor board, back" loading="lazy">
+          <figcaption>back: USB-C + sensor connectors</figcaption>
+        </figure>
+      </div>
+      <div class="tags"><span>KiCad</span><span>4-layer PCB</span><span>Gerber / BOM</span><span>STM32</span><span>ESP32</span><span>Board bring-up</span></div>
+    </article>
+
+    <article class="project">
+      <div class="ptag">[ university · FPGA ]</div>
+      <h3>Digital Stopwatch and Timer using FPGA</h3>
+      <div class="meta">TU Chemnitz · M.Sc. course &ldquo;Hardware Acceleration using FPGA&rdquo; · Xilinx Artix-7 · Vivado · ModelSim</div>
+      <p>A digital stopwatch and countdown timer in synthesizable VHDL on a Xilinx Artix-7, running on the lab platform with push buttons and a character LCD. A start menu on the LCD selects the stopwatch or the timer.</p>
+      <ul class="points">
+        <li><b>Control:</b> FSM-based control with input debouncing and lap-time storage.</li>
+        <li><b>Display:</b> parallel driver for a 20×4 ST7036 character LCD.</li>
+        <li><b>Top level:</b> an arbiter between the stopwatch and the timer function.</li>
+        <li><b>Verification:</b> my own ModelSim testbenches and post-synthesis simulation in Vivado.</li>
+      </ul>
+      <div class="grid2" style="grid-template-columns:1fr 1fr">
+        <pre class="code"><div class="bar"><i></i><i></i><i></i>&nbsp; stopwatch.vhd &nbsp;<span class="c">(simplified idea)</span></div><code><span class="k">type</span> state_t <span class="k">is</span> (IDLE, RUNNING, PAUSED);
+<span class="k">signal</span> state : state_t := IDLE;
+
+<span class="k">process</span> (clk)
+<span class="k">begin</span>
+  <span class="k">if</span> <span class="f">rising_edge</span>(clk) <span class="k">then</span>
+    <span class="k">case</span> state <span class="k">is</span>
+      <span class="k">when</span> IDLE =&gt;
+        <span class="k">if</span> btn_start = <span class="n">'1'</span> <span class="k">then</span>
+          state &lt;= RUNNING;
+        <span class="k">end if</span>;
+      <span class="k">when</span> RUNNING =&gt;
+        <span class="k">if</span> tick_10ms = <span class="n">'1'</span> <span class="k">then</span>
+          time_cnt &lt;= time_cnt + <span class="n">1</span>;
+        <span class="k">end if</span>;
+        <span class="k">if</span> btn_lap = <span class="n">'1'</span> <span class="k">then</span>  <span class="c">-- store lap</span>
+          lap_mem(lap_idx) &lt;= time_cnt;
+        <span class="k">end if</span>;
+        <span class="k">if</span> btn_stop = <span class="n">'1'</span> <span class="k">then</span>
+          state &lt;= PAUSED;
+        <span class="k">end if</span>;
+      <span class="k">when</span> PAUSED =&gt;
+        <span class="k">if</span> btn_start = <span class="n">'1'</span> <span class="k">then</span>
+          state &lt;= RUNNING;
+        <span class="k">end if</span>;
+    <span class="k">end case</span>;
+  <span class="k">end if</span>;
+<span class="k">end process</span>;</code></pre>
+        <div>
+          <figure class="paper" style="margin:0 0 14px">
+            <img src="img/fpga_bench.jpg" alt="Artix-7 FPGA module on the lab platform with buttons, LEDs and character LCD" loading="lazy">
+            <figcaption>&gt; Artix-7 module on the lab platform</figcaption>
+          </figure>
+          <figure class="paper" style="margin:0">
+            <img src="img/fpga_sim.png" alt="Vivado simulation waveform with reset, clock, button input, counter, function select and FSM state" loading="lazy">
+            <figcaption>&gt; Vivado simulation: clock, button, counter, function select and FSM state</figcaption>
+          </figure>
+        </div>
+      </div>
+      <div class="fpga-lcd">
+        <figure><img src="img/fpga_menu.jpg" alt="LCD start menu: choose stopwatch or timer" loading="lazy"><figcaption>&gt; start menu</figcaption></figure>
+        <figure><img src="img/fpga_stopwatch.jpg" alt="LCD stopwatch screen with two lap times" loading="lazy"><figcaption>&gt; stopwatch with laps</figcaption></figure>
+        <figure><img src="img/fpga_timer.jpg" alt="LCD countdown timer screen" loading="lazy"><figcaption>&gt; countdown timer</figcaption></figure>
+      </div>
+      <div class="tags"><span>VHDL</span><span>Xilinx Artix-7</span><span>Vivado</span><span>ModelSim</span><span>FSM</span><span>Testbenches</span><span>LCD driver</span></div>
+    </article>
+
+    <article class="project">
+      <div class="ptag">[ research · M.Sc. thesis ]</div>
+      <h3>Comparative Study of Excitation Signals for Bioimpedance Measurement on STM32 Microcontrollers: Performance and Energy Efficiency Analysis</h3>
+      <div class="meta">TU Chemnitz, Professorship of Measurement and Sensor Technology · 2026 · grade 1.7</div>
+      <p><b>Application:</b> portable, battery-powered bioimpedance spectroscopy devices, which measure how biological
+      tissue reacts to a small AC signal over many frequencies. Such a device needs the right microcontroller and the right
+      excitation signal to get both accurate measurements and low power consumption.</p>
+      <p>My thesis compares nine excitation signals (multisine, DIBS, MLBS, linear, logarithmic and quadratic chirp, sine sweep)
+      on six STM32 microcontrollers (F303, L476, L4P5, L552, U5A5, G474), each with DAC-based and timer-based generation,
+      measured with the I-V method and FFT from 1 to 250 kHz.</p>
+
+      <figure class="illus" style="margin-bottom:22px">
+        <svg viewBox="0 0 1000 190" role="img" aria-label="Signal chain: MATLAB lookup table, DMA, DAC, device under test, ADC, DMA, FFT, impedance">
+          <g font-size="13" font-weight="700" text-anchor="middle">
+            <rect x="10" y="40" width="104" height="56" rx="8" fill="#0f1821" stroke="#e0a458"/><text x="62" y="64" fill="#e0a458">MATLAB</text><text x="62" y="82" fill="#8197a8" font-size="11" font-weight="400">12-bit LUT</text>
+            <rect x="138" y="40" width="84" height="56" rx="8" fill="#0f1821" stroke="#4cc9f0"/><text x="180" y="73" fill="#4cc9f0">DMA</text>
+            <rect x="246" y="40" width="96" height="56" rx="8" fill="#0f1821" stroke="#4cc9f0"/><text x="294" y="64" fill="#4cc9f0">DAC</text><text x="294" y="82" fill="#8197a8" font-size="11" font-weight="400">or timer PWM</text>
+            <rect x="366" y="30" width="150" height="76" rx="8" fill="#0f1821" stroke="#3ddc97"/><text x="441" y="54" fill="#3ddc97">DUT</text>
+            <path d="M386 84 h14 l4 -7 l6 14 l6 -14 l6 14 l4 -7 h10" stroke="#3ddc97" fill="none" stroke-width="1.6"/>
+            <path d="M436 84 h10 M446 72 v24 M452 72 v24 M452 84 h10" stroke="#3ddc97" fill="none" stroke-width="1.6"/>
+            <text x="490" y="89" fill="#8197a8" font-size="10" font-weight="400">Cole</text>
+            <rect x="540" y="40" width="104" height="56" rx="8" fill="#0f1821" stroke="#4cc9f0"/><text x="592" y="64" fill="#4cc9f0">ADC1/2</text><text x="592" y="82" fill="#8197a8" font-size="11" font-weight="400">V(t), I(t)</text>
+            <rect x="668" y="40" width="84" height="56" rx="8" fill="#0f1821" stroke="#4cc9f0"/><text x="710" y="73" fill="#4cc9f0">DMA</text>
+            <rect x="776" y="40" width="84" height="56" rx="8" fill="#0f1821" stroke="#c792ea"/><text x="818" y="73" fill="#c792ea">FFT</text>
+            <rect x="884" y="40" width="106" height="56" rx="8" fill="#0f1821" stroke="#f4d35e"/><text x="937" y="64" fill="#f4d35e">|Z|, phase</text><text x="937" y="82" fill="#8197a8" font-size="11" font-weight="400">UART → CSV</text>
+          </g>
+          <g stroke="#4cc9f0" stroke-width="2" fill="none" class="flow">
+            <path d="M114 68 H138"/><path d="M222 68 H246"/><path d="M342 68 H366"/><path d="M516 68 H540"/><path d="M644 68 H668"/><path d="M752 68 H776"/><path d="M860 68 H884"/>
+          </g>
+          <g font-size="11" fill="#8197a8">
+            <path d="M294 96 V130" stroke="#e0a458" stroke-dasharray="3 3"/><rect x="246" y="130" width="96" height="26" rx="5" fill="#13202b" stroke="#e0a458"/><text x="294" y="147" text-anchor="middle" fill="#e0a458">Timer 2 MHz</text>
+            <path d="M592 96 V130" stroke="#e0a458" stroke-dasharray="3 3"/><rect x="544" y="130" width="96" height="26" rx="5" fill="#13202b" stroke="#e0a458"/><text x="592" y="147" text-anchor="middle" fill="#e0a458">Timer trigger</text>
+            <text x="10" y="182">sine sweep · multisine · DIBS · linear / log / quad chirp · MLBS  —  1–250 kHz, 5 / 10 / 15 / 20 frequencies</text>
+          </g>
+        </svg>
+        <figcaption>&gt; my signal chain on the STM32: lookup table → DMA → DAC → DUT → ADC → DMA → FFT → impedance</figcaption>
+      </figure>
+
+      <ul class="points">
+        <li><b>Signal generation:</b> frequencies log-spaced and aligned to the FFT bins, quantized to 12 bit in MATLAB and exported as C arrays. On the STM32 the table streams via DMA into the DAC, triggered by a timer at 2 MHz. Binary signals (DIBS, MLBS) also run without a DAC: DMA writes the timer's compare register and the PWM output on a GPIO carries the signal.</li>
+        <li><b>Acquisition:</b> voltage and current captured with ADC1 and ADC2, timer-triggered, via DMA; impedance by FFT.</li>
+        <li><b>Verification:</b> every signal checked on the PicoScope in time domain and spectrum against the MATLAB simulation, including the effect of the internal RC clock (HSI) against the external crystal (HSE).</li>
+        <li><b>Power and runtime:</b> current measured with a Nordic Power Profiler Kit II and an ST-LINK-V3PWR (both agree within 0.1 mA); runtime with the ARM DWT cycle counter.</li>
+        <li><b>Accuracy:</b> validated against an HP4294A precision impedance analyzer on three test loads, including a Cole circuit as a tissue model; results exported over UART to CSV.</li>
+      </ul>
+
+      <div class="grid2" style="grid-template-columns:1.35fr 1fr">
+        <figure class="paper">
+          <img src="img/thesis_picoscope.jpg" alt="PicoScope capture of the multisine signal with 20 frequencies, time domain and spectrum" loading="lazy">
+          <figcaption>&gt; real capture: 20-frequency multisine from the STM32 DAC on the PicoScope</figcaption>
+        </figure>
+        <figure class="paper">
+          <img src="img/thesis_nyquist.jpg" alt="Nyquist plot of the Cole circuit measured with all signals against the HP4294A reference" loading="lazy">
+          <figcaption>&gt; result: Cole circuit, all signals vs. HP4294A reference</figcaption>
+        </figure>
+      </div>
+
+      <h4 class="mono" style="color:var(--green);margin:0 0 10px">// key results</h4>
+      <ul class="points">
+        <li><b>Most accurate:</b> on the Cole circuit, multisine had the lowest magnitude deviation (0.89 %) and DIBS-DAC the lowest phase deviation (0.42°). DAC-based signals beat their timer-based versions.</li>
+        <li><b>Power:</b> the signal type hardly matters; the MCU architecture does.</li>
+        <li><b>Runtime:</b> the Cortex-M33 parts (L5, U5) are fastest, about 40 ms for 20 frequencies. Sine sweep is about 3× slower.</li>
+        <li><b>Limits found:</b> MLBS works with the DAC but fails with the timer (GPIO too slow for the fast switching); sine sweep loses about 5 % to DAC settling.</li>
+        <li><b>Recommendation:</b> STM32L5 with multisine or DIBS-DAC for battery-powered devices, STM32U5 for a balance of low power and speed, STM32G4 for high accuracy thanks to its math accelerators (CORDIC, FMAC) and high-resolution timer.</li>
+      </ul>
+      <div class="tags"><span>STM32 F3 / G4 / L4 / L5 / U5</span><span>DAC</span><span>ADC</span><span>DMA</span><span>Timers / HRTIM</span><span>FFT</span><span>MATLAB</span><span>PicoScope</span><span>Power profiling</span><span>DWT</span></div>
+    </article>
+
+  </div>
+</section>
+
+<section id="experience" class="alt">
+  <div class="wrap">
+    <div class="label">// 03 &nbsp;experience</div>
+    <h2>Where I have worked</h2>
+    <div class="timeline">
+      <div class="job">
+        <div class="when">Oct 2022 – Jul 2026</div>
+        <h3>Embedded Software Developer</h3>
+        <div class="org">E-Works Mobility GmbH, Ismaning, Germany</div>
+        <p>Firmware for EV conversion ECUs: instrument cluster (sole owner), CAN bootloader, OTA, junction box functions, HIL bench testing. Working student until Sep 2023, then full-time. The company closed in July 2026 because of insolvency.</p>
+      </div>
+      <div class="job">
+        <div class="when">Jan 2022 – Sep 2022</div>
+        <h3>Research Assistant (Software)</h3>
+        <div class="org">TU Chemnitz, Germany</div>
+        <p>Growthboxes project: boxes for growing plants and insects. Firmware on a 32-bit MCU reading temperature and humidity sensors and controlling pumps and actuators; ESP32 IoT devices with MQTT, status and controls on ThingsBoard.</p>
+      </div>
+      <div class="job">
+        <div class="when">Aug 2018 – Sep 2021</div>
+        <h3>Technical Lead</h3>
+        <div class="org">Intellipredikt Technologies, India</div>
+        <p>Joined as Senior Software Engineer, Technical Lead from June 2019. Vehicle dataloggers (CAN, J1939, UDS), Android diagnostic app over Bluetooth (read and clear DTCs), BLE 5.0 mesh for Autoliv, team lead and customer contact.</p>
+      </div>
+      <div class="job">
+        <div class="when">Dec 2017 – Aug 2018</div>
+        <h3>Embedded Software Developer</h3>
+        <div class="org">Analog and Digital Labs, India</div>
+        <p>Main project: wireless traffic signal control for the Tamil Nadu Police (Wi-Fi, SPI lamp control, PCB design). Also an LED scroll board with audio.</p>
+      </div>
+      <div class="job">
+        <div class="when">Jun 2016 – Dec 2017</div>
+        <h3>R&amp;D Engineer</h3>
+        <div class="org">Lakshmi Info Tech, India</div>
+        <p>First project: dataloggers on several machines sending data over Wi-Fi to a central router. Modbus energy monitoring on Raspberry Pi for Texmo.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="skills">
+  <div class="wrap">
+    <div class="label">// 04 &nbsp;skills</div>
+    <h2>What I work with</h2>
+    <div class="skills">
+      <div class="skill"><h4>PROGRAMMING</h4><p>C, C++, Python, MATLAB</p></div>
+      <div class="skill"><h4>MCU</h4><p>ARM Cortex-M (STM32 F4/H7), ESP32, NXP, TI, Silicon Labs; Raspberry Pi</p></div>
+      <div class="skill"><h4>RTOS</h4><p>FreeRTOS (CMSIS-RTOS v2), TI-RTOS, Linux (application level); bootloaders, OTA, interrupts, DMA, caches, state machines, fault handling</p></div>
+      <div class="skill"><h4>AUTOMOTIVE</h4><p>CAN, CAN FD, ISO-TP (ISO 15765), J1939, UDS; AUTOSAR and V-model</p></div>
+      <div class="skill"><h4>INTERFACES</h4><p>SPI, QSPI, I²C, UART, I2S/SAI, LIN, Ethernet, RS-232/485, Modbus, MQTT, BLE (GATT, advertising, pairing, mesh), Wi-Fi, LTE</p></div>
+      <div class="skill"><h4>HARDWARE</h4><p>Schematic and 4-layer PCB design in KiCad, Gerber/BOM, board bring-up, component selection</p></div>
+      <div class="skill"><h4>DEBUG</h4><p>arm-none-eabi-gcc, make, CMake, gdb, OpenOCD, J-Link, ST-LINK, oscilloscope, logic analyzer, PCAN-Explorer, BUSMASTER</p></div>
+      <div class="skill"><h4>TOOLS</h4><p>VS Code, STM32CubeIDE, TouchGFX, Git, GitLab CI/CD, Jira, Confluence, Doxygen</p></div>
+      <div class="skill"><h4>METHODS</h4><p>Unit testing, HIL bench testing, MISRA-C, code reviews, requirements and design documentation, V-model, Agile/Scrum</p></div>
+      <div class="skill learning"><h4>LEARNING</h4><p>Embedded Linux: Linux system programming, Buildroot, Yocto, Linux kernel modules and drivers</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="education" class="alt">
+  <div class="wrap">
+    <div class="label">// 05 &nbsp;education</div>
+    <h2>Where I studied</h2>
+    <div class="timeline">
+      <div class="job">
+        <div class="when">2021 – 2026</div>
+        <h3>M.Sc. Embedded Systems</h3>
+        <div class="org">TU Chemnitz, Germany</div>
+        <p>Thesis (1.7): &ldquo;Comparative Study of Excitation Signals for Bioimpedance Measurement on STM32 Microcontrollers: Performance and Energy Efficiency Analysis&rdquo;, for portable bioimpedance spectroscopy devices. Research project (1.3): ESP32 measurement system for 32 force sensors, including PCB design. Coursework in real-time systems, automotive platforms (AUTOSAR, CAN, FlexRay, Automotive Ethernet), DSP, FPGA/VHDL, verification and test, network security.</p>
+      </div>
+      <div class="job">
+        <div class="when">2012 – 2016</div>
+        <h3>B.E. Electronics and Communication</h3>
+        <div class="org">Anna University, India</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer id="contact">
+  <div class="wrap">
+    <div class="label">// 06 &nbsp;contact</div>
+    <h2>Let's build something that ships.</h2>
+    <div class="term">
+      <span class="p">$</span> whoami<br>
+      Gobinath Kannan, Senior Embedded Software Engineer<br>
+      <span class="p">$</span> cat contact.txt<br>
+      email &nbsp;&nbsp;&nbsp;: <a href="mailto:gkannan281995@gmail.com">gkannan281995@gmail.com</a><br>
+      linkedin : <a href="https://www.linkedin.com/in/gobinath-kannan">linkedin.com/in/gobinath-kannan</a><br>
+      location : Munich area, Germany (permanent residence permit)<br>
+      language : English (working language), German (actively improving)
+    </div>
+    <div class="btns" style="justify-content:center">
+      <a class="btn primary" href="Gobinath_Kannan_CV.pdf">↓ download CV</a>
+      <a class="btn" href="mailto:gkannan281995@gmail.com">✉ email</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- typing line ---------- */
+(() => {
+  const lines = ['> C · C++ · STM32 · ESP32 · FreeRTOS', '> CAN · bootloaders · OTA in the field',
+                 '> BLE 5.0 mesh · J1939 · UDS', '> KiCad · bring-up · oscilloscope'];
+  const el = document.getElementById('typer');
+  if (still) { el.textContent = lines[0]; return; }
+  let li = 0, ci = 0, del = false;
+  (function tick() {
+    const s = lines[li];
+    el.textContent = s.slice(0, ci);
+    if (!del && ci < s.length) { ci++; return setTimeout(tick, 45); }
+    if (!del) { del = true; return setTimeout(tick, 1800); }
+    if (ci > 2) { ci--; return setTimeout(tick, 18); }
+    del = false; li = (li + 1) % lines.length; setTimeout(tick, 250);
+  })();
+})();
+
+/* ---------- PCB traces in the hero ---------- */
+(() => {
+  const cv = document.getElementById('pcb'), ctx = cv.getContext('2d');
+  let W, H, traces = [], pulses = [];
+  const G = 22, dirs = [[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1],[1,-1]];
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+
+  function build() {
+    const r = cv.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2);
+    W = r.width; H = r.height; cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    seed = 7; traces = [];
+    const n = Math.round(W * H / 9000);
+    for (let t = 0; t < n; t++) {
+      let x = Math.round(rnd() * W / G) * G, y = Math.round(rnd() * H / G) * G;
+      let d = Math.floor(rnd() * 4) * 2;
+      const pts = [[x, y]];
+      const segs = 2 + Math.floor(rnd() * 4);
+      for (let s = 0; s < segs; s++) {
+        const len = (2 + Math.floor(rnd() * 7)) * G;
+        x += dirs[d][0] * len; y += dirs[d][1] * len; pts.push([x, y]);
+        d = (d + (rnd() < .5 ? 1 : 7)) % 8;
+      }
+      let L = 0; for (let i = 1; i < pts.length; i++) L += Math.hypot(pts[i][0]-pts[i-1][0], pts[i][1]-pts[i-1][1]);
+      traces.push({ pts, L, c: rnd() < .7 ? '224,164,88' : '61,220,151' });
+    }
+    pulses = traces.filter(() => rnd() < .35).map(t => ({ t, p: rnd(), v: .0012 + rnd() * .002 }));
+  }
+  function at(tr, f) {
+    let d = f * tr.L;
+    for (let i = 1; i < tr.pts.length; i++) {
+      const a = tr.pts[i-1], b = tr.pts[i], l = Math.hypot(b[0]-a[0], b[1]-a[1]);
+      if (d <= l) return [a[0] + (b[0]-a[0]) * d / l, a[1] + (b[1]-a[1]) * d / l];
+      d -= l;
+    }
+    return tr.pts[tr.pts.length - 1];
+  }
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    ctx.lineCap = ctx.lineJoin = 'round';
+    for (const tr of traces) {
+      ctx.strokeStyle = `rgba(${tr.c},.28)`; ctx.lineWidth = 2;
+      ctx.beginPath(); tr.pts.forEach((p, i) => i ? ctx.lineTo(...p) : ctx.moveTo(...p)); ctx.stroke();
+      for (const p of [tr.pts[0], tr.pts[tr.pts.length - 1]]) {
+        ctx.fillStyle = `rgba(${tr.c},.45)`; ctx.beginPath(); ctx.arc(p[0], p[1], 4, 0, 7); ctx.fill();
+        ctx.fillStyle = '#070b10'; ctx.beginPath(); ctx.arc(p[0], p[1], 1.8, 0, 7); ctx.fill();
+      }
+    }
+    for (const pu of pulses) {
+      const [x, y] = at(pu.t, pu.p);
+      const g = ctx.createRadialGradient(x, y, 0, x, y, 12);
+      g.addColorStop(0, 'rgba(120,255,200,.95)'); g.addColorStop(1, 'rgba(61,220,151,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, 12, 0, 7); ctx.fill();
+      if (!still) { pu.p += pu.v; if (pu.p > 1) pu.p = 0; }
+    }
+    if (!still) requestAnimationFrame(draw);
+  }
+  build(); draw();
+  addEventListener('resize', () => { build(); if (still) draw(); });
+})();
+
+/* ---------- oscilloscope ---------- */
+(() => {
+  const cv = document.getElementById('osc'), ctx = cv.getContext('2d');
+  let W, H, t = 0;
+  function size() {
+    const r = cv.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2);
+    W = r.width; H = r.height; cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  const bits = [1,0,0,1,1,0,1,0,1,1,1,0,0,1,0,1,0,0,1,1,0,1,1,1,0,1,0,0,0,1,1,0];
+  function trace(color, fn, glow) {
+    ctx.strokeStyle = color; ctx.lineWidth = 1.8; ctx.shadowColor = color; ctx.shadowBlur = glow;
+    ctx.beginPath();
+    for (let x = 0; x <= W; x += 1) { const y = fn(x); x ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+    ctx.stroke(); ctx.shadowBlur = 0;
+  }
+  function draw() {
+    ctx.fillStyle = '#050806'; ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = 'rgba(120,160,140,.13)'; ctx.lineWidth = 1;
+    for (let i = 1; i < 10; i++) { const x = i * W / 10; ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+    for (let i = 1; i < 8; i++) { const y = i * H / 8; ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+    ctx.strokeStyle = 'rgba(120,160,140,.3)';
+    ctx.beginPath(); ctx.moveTo(W / 2, 0); ctx.lineTo(W / 2, H); ctx.moveTo(0, H / 2); ctx.lineTo(W, H / 2); ctx.stroke();
+
+    const k = 2 * Math.PI / W;
+    // CH1: DAC excitation, sine with a stepped (lookup-table) look
+    trace('#f4d35e', x => { const xs = Math.floor(x / 6) * 6; return H * .22 - Math.sin(xs * k * 2 + t) * H * .12; }, 8);
+    // CH2: CAN bit stream
+    const bw = W / 24, off = (t * 40) % (bw * bits.length);
+    trace('#4cc9f0', x => { const b = bits[Math.floor((x + off) / bw) % bits.length]; return H * (b ? .44 : .56); }, 8);
+    // CH3: PWM with changing duty cycle
+    const per = W / 8, duty = .3 + .25 * Math.sin(t * .6);
+    trace('#a2b4ad', x => (((x + t * 30) % per) / per < duty ? H * .72 : H * .86), 4);
+    t += .03;
+    if (!still) requestAnimationFrame(draw);
+  }
+  size(); draw();
+  addEventListener('resize', () => { size(); if (still) draw(); });
+})();
+/* ---------- scale the diagnostics animation to its column ---------- */
+(() => {
+  const box = document.getElementById('diagScale'), art = document.getElementById('diagAuto');
+  const fit = () => { art.style.transform = `scale(${box.clientWidth / 560})`; };
+  fit(); addEventListener('resize', fit);
+})();
+</script>
+</body>
+</html>
